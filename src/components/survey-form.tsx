@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -29,7 +29,6 @@ export function SurveyForm() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isIntro, setIsIntro] = useState(true);
   const [scrollContainer, setScrollContainer] = useState<HTMLDivElement | null>(null);
-  const lastScrollTime = useRef(0);
 
   const { toast } = useToast();
 
@@ -39,14 +38,6 @@ export function SurveyForm() {
   });
 
   const { formState: { errors }, watch, trigger, getValues } = methods;
-
-  const allQuestions = useMemo(() => {
-    return [
-      { id: 'intro-card', type: 'intro' as const }, 
-      ...questions, 
-      { id: 'summary-card', type: 'summary' as const }
-    ];
-  }, []);
 
   const currentQuestion = useMemo(() => questions[step], [step]);
   
@@ -59,15 +50,6 @@ export function SurveyForm() {
     }
     return text;
   }, [currentQuestion, getValues]);
-
-  const { mainText, exampleText } = useMemo(() => {
-    if (!questionText) return { mainText: '', exampleText: null };
-    const match = questionText.match(/(.*)\((Example:.*)\)/s);
-    if (match) {
-        return { mainText: match[1].trim(), exampleText: match[2].trim() };
-    }
-    return { mainText: questionText, exampleText: null };
-  }, [questionText]);
 
   const isQuestion = currentQuestion?.type !== 'header';
   const currentQuestionIndex = isQuestion ? questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id) : -1;
@@ -382,9 +364,9 @@ export function SurveyForm() {
       </div>
       
       {!isIntro && !summary && !isSubmitting && (
-        <div className="fixed left-4 top-1/2 -translate-y-1/2 h-64 z-0 flex flex-col items-center">
-            <div className="relative h-full w-4 flex justify-center">
-                <Progress orientation="vertical" value={progress} className="w-2 h-full" />
+        <div className="fixed left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center">
+            <div className="relative h-64 w-4 flex justify-center">
+                <Progress orientation="vertical" value={progress} className="w-2 h-full bg-primary/20" />
             </div>
              <p className="text-primary font-bold mt-2 text-xs">{Math.round(progress)}%</p>
         </div>
@@ -394,7 +376,9 @@ export function SurveyForm() {
         <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
           <div ref={setScrollContainer} className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
             {renderIntro()}
-            {questions.map((q, i) => renderQuestion(q, i))}
+            {questions.map((q, i) => (
+              <React.Fragment key={q.id}>{renderQuestion(q, i)}</React.Fragment>
+            ))}
             {renderSummary()}
           </div>
         </form>
