@@ -29,7 +29,8 @@ export function SurveyForm() {
   const [summary, setSummary] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isIntro, setIsIntro] = useState(true);
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const mainContainerRef = useRef<HTMLDivElement>(null);
+  const activeStepRef = useRef<HTMLDivElement>(null);
 
   const { toast } = useToast();
 
@@ -84,18 +85,21 @@ export function SurveyForm() {
   }, [progress, summary]);
 
   const scrollToView = useCallback((index: number) => {
-    const element = document.getElementById(`step-${index}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (mainContainerRef.current) {
+        const stepHeight = mainContainerRef.current.clientHeight;
+        const targetScrollTop = (index + 1) * stepHeight;
+        mainContainerRef.current.scrollTo({
+            top: targetScrollTop,
+            behavior: 'smooth',
+        });
     }
   }, []);
 
   const handleNext = async () => {
     if (isIntro) {
       setIsIntro(false);
-      const nextStep = 0;
-      setCurrentStep(nextStep);
-      scrollToView(nextStep);
+      setCurrentStep(0);
+      scrollToView(0);
       return;
     }
   
@@ -137,7 +141,7 @@ export function SurveyForm() {
   
   const onSubmit = async (data: SurveySchema) => {
     setIsSubmitting(true);
-    scrollToView(questions.length + 1);
+    scrollToView(questions.length);
     const result = await submitSurvey(data);
     if (result.success) {
       setSummary(result.summary);
@@ -396,7 +400,7 @@ export function SurveyForm() {
   );
 
   return (
-    <main className="relative h-screen w-full bg-background overflow-hidden pl-12">
+    <main className="relative h-screen w-full bg-background overflow-hidden">
       <div className="absolute inset-0 -z-20">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent"></div>
         <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse"></div>
@@ -405,16 +409,15 @@ export function SurveyForm() {
       
       {!isIntro && !summary && !isSubmitting && (
         <div className="fixed left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center">
-            <div className="relative h-64 w-2 flex justify-center items-center bg-primary/20 rounded-full overflow-hidden">
+            <div className="relative h-64 w-1 flex justify-center items-center bg-primary/20 rounded-full overflow-hidden">
                 <div className="absolute bottom-0 w-full bg-primary transition-all duration-300" style={{height: `${progress}%`}}></div>
-                <span className="z-10 text-primary-foreground font-bold text-[10px] mix-blend-difference" style={{writingMode: 'vertical-rl', transform: 'rotate(180deg)'}}>{Math.round(progress)}%</span>
             </div>
         </div>
       )}
       
       <FormProvider {...methods}>
         <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
-          <div ref={scrollContainerRef} className="h-full w-full overflow-hidden snap-y snap-mandatory">
+          <div ref={mainContainerRef} className="h-full w-full overflow-hidden snap-y snap-mandatory">
             {renderIntro()}
             {questions.map((q, i) => renderQuestion(q, i))}
             {renderSummary()}
