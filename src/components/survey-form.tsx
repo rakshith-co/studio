@@ -59,6 +59,7 @@ export function SurveyForm() {
     return { mainText: questionText, exampleText: null };
   }, [questionText]);
 
+
   const isQuestion = currentQuestion?.type !== 'header';
   const currentQuestionIndex = isQuestion ? questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id) : -1;
   const totalQuestions = questionOnlyQuestions.length;
@@ -224,65 +225,65 @@ export function SurveyForm() {
 
   if (isIntro) {
     return (
-        <div className="w-full max-w-lg mx-auto text-center flex flex-col justify-start pt-16 sm:pt-24 flex-grow">
-             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <Logo className="mx-auto h-12 w-12 sm:h-20 sm:w-20 text-primary mb-2" />
-                <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold font-headline tracking-tighter">Q-Commerce Insights</h1>
-                <p className="text-muted-foreground text-sm sm:text-lg mt-2 sm:mt-4 max-w-xs sm:max-w-2xl mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
-            </motion.div>
-            
-            <motion.div 
-                className="grid grid-cols-3 gap-2 sm:gap-6 mt-6 sm:mt-12 max-w-4xl mx-auto"
-                initial="hidden"
-                animate="visible"
-                variants={{
-                    visible: { transition: { staggerChildren: 0.2 } }
-                }}
-            >
-                <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                    <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
-                        <CardHeader className="items-center p-2 sm:p-6">
-                            <FileText className="w-6 h-6 sm:w-10 sm:h-10 text-primary"/>
-                            <CardTitle className="text-xs sm:text-xl mt-1">Questions</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-2 sm:p-6 pt-0">
-                            <p className="text-xl sm:text-4xl font-bold">{totalQuestions}</p>
-                            <p className="text-muted-foreground text-xs sm:text-base">in-depth</p>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-                <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                    <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
-                        <CardHeader className="items-center p-2 sm:p-6">
-                            <Clock className="w-6 h-6 sm:w-10 sm:h-10 text-primary"/>
-                            <CardTitle className="text-xs sm:text-xl mt-1">Duration</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-2 sm:p-6 pt-0">
-                            <p className="text-xl sm:text-4xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
-                            <p className="text-muted-foreground text-xs sm:text-base">minutes</p>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-                <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                    <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
-                        <CardHeader className="items-center p-2 sm:p-6">
-                            <BarChart className="w-6 h-6 sm:w-10 sm:h-10 text-primary"/>
-                            <CardTitle className="text-xs sm:text-xl mt-1">Reward</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-2 sm:p-6 pt-0">
-                            <p className="text-sm sm:text-lg font-bold">Summary</p>
-                            <p className="text-muted-foreground text-xs sm:text-base">of your behavior</p>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            </motion.div>
+      <div className="w-full max-w-lg mx-auto text-center flex flex-col justify-start pt-8 sm:pt-16 flex-grow">
+           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <Logo className="mx-auto h-12 w-12 sm:h-20 sm:w-20 text-primary mb-2" />
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold font-headline tracking-tighter">Q-Commerce Insights</h1>
+              <p className="text-muted-foreground text-sm sm:text-lg mt-2 sm:mt-4 max-w-xs sm:max-w-2xl mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
+          </motion.div>
+          
+          <motion.div 
+              className="grid grid-cols-2 gap-2 sm:gap-6 mt-6 sm:mt-12 max-w-4xl mx-auto"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                  visible: { transition: { staggerChildren: 0.2 } }
+              }}
+          >
+              <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
+                      <CardHeader className="items-center p-2 sm:p-6">
+                          <FileText className="w-6 h-6 sm:w-10 sm:h-10 text-primary"/>
+                          <CardTitle className="text-xs sm:text-xl mt-1">Questions</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-2 sm:p-6 pt-0">
+                          <p className="text-xl sm:text-4xl font-bold">{totalQuestions}</p>
+                          <p className="text-muted-foreground text-xs sm:text-base">in-depth</p>
+                      </CardContent>
+                  </Card>
+              </motion.div>
+              <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
+                      <CardHeader className="items-center p-2 sm:p-6">
+                          <Clock className="w-6 h-6 sm:w-10 sm:h-10 text-primary"/>
+                          <CardTitle className="text-xs sm:text-xl mt-1">Duration</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-2 sm:p-6 pt-0">
+                          <p className="text-xl sm:text-4xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
+                          <p className="text-muted-foreground text-xs sm:text-base">minutes</p>
+                      </CardContent>
+                  </Card>
+              </motion.div>
+              <motion.div className="col-span-2 mt-2 sm:mt-6" variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
+                      <CardHeader className="items-center p-2 sm:p-6">
+                          <BarChart className="w-6 h-6 sm:w-10 sm:h-10 text-primary"/>
+                          <CardTitle className="text-xs sm:text-xl mt-1">Reward</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-2 sm:p-6 pt-0">
+                          <p className="text-sm sm:text-lg font-bold">Summary</p>
+                          <p className="text-muted-foreground text-xs sm:text-base">of your behavior</p>
+                      </CardContent>
+                  </Card>
+              </motion.div>
+          </motion.div>
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.5 }} className="mt-auto pb-4">
-                <Button size="lg" className="mt-8 sm:mt-12 text-base sm:text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={() => setIsIntro(false)}>
-                    Start Your Analysis <ArrowRight className="ml-2" />
-                </Button>
-            </motion.div>
-        </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.5 }} className="mt-auto pb-4">
+              <Button size="lg" className="mt-6 sm:mt-8 text-base sm:text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={() => setIsIntro(false)}>
+                  Start Your Analysis <ArrowRight className="ml-2" />
+              </Button>
+          </motion.div>
+      </div>
     )
   }
 
