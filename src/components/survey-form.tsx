@@ -70,41 +70,32 @@ export function SurveyForm() {
   const currentQuestion = useMemo(() => questions[currentStep], [currentStep]);
 
   const isQuestion = currentQuestion?.type !== 'header';
-  const totalQuestions = questionOnlyQuestions.length;
-  
-  const currentQuestionIndex = useMemo(() => {
-    if (isIntro || !isQuestion || !currentQuestion) {
-        return -1;
-    }
-    const qIndex = questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id);
-    return qIndex;
-  }, [isIntro, isQuestion, currentStep, currentQuestion]);
-  
+
   const progress = useMemo(() => {
     if (summary || isSubmitting) return 100;
     if (isIntro) return 0;
 
-    let effectiveQuestionIndex = -1;
-
-    if (currentQuestion?.type === 'header') {
-        // For headers, find the index of the *next* actual question
-        for (let i = currentStep + 1; i < questions.length; i++) {
-            const nextQuestion = questions[i];
-            if (nextQuestion.type !== 'header') {
-                effectiveQuestionIndex = questionOnlyQuestions.findIndex(q => q.id === nextQuestion.id);
-                // We want the progress to reflect the step *before* this question
-                effectiveQuestionIndex--; 
-                break;
-            }
+    let questionIndex = -1;
+    if (currentQuestion) {
+      if(currentQuestion.type !== 'header') {
+        questionIndex = questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id);
+      } else {
+        // Find the next non-header question and use its index - 1
+        const nextQuestionIndex = questions.findIndex((q, i) => i > currentStep && q.type !== 'header');
+        if (nextQuestionIndex !== -1) {
+          const nextQ = questions[nextQuestionIndex];
+          questionIndex = questionOnlyQuestions.findIndex(q => q.id === nextQ.id) -1;
+        } else {
+          // It's the last header, so we are at the end
+          questionIndex = questionOnlyQuestions.length -1;
         }
-    } else if (currentQuestion) {
-        effectiveQuestionIndex = questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id);
+      }
     }
 
-    if (effectiveQuestionIndex < 0) return 0;
+    if (questionIndex < 0) return 0;
 
-    return ((effectiveQuestionIndex + 1) / totalQuestions) * 100;
-  }, [currentStep, questions, questionOnlyQuestions, totalQuestions, isIntro, summary, isSubmitting, currentQuestion]);
+    return ((questionIndex + 1) / questionOnlyQuestions.length) * 100;
+  }, [currentStep, isIntro, summary, isSubmitting, currentQuestion]);
 
 
   useEffect(() => {
@@ -296,7 +287,7 @@ export function SurveyForm() {
                         <CardTitle className="text-sm mt-2">Questions</CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
-                        <p className="text-xl font-bold">{totalQuestions}</p>
+                        <p className="text-xl font-bold">{questionOnlyQuestions.length}</p>
                         <p className="text-muted-foreground text-xs">in-depth</p>
                     </CardContent>
                 </Card>
@@ -308,7 +299,7 @@ export function SurveyForm() {
                         <CardTitle className="text-sm mt-2">Duration</CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
-                        <p className="text-xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
+                        <p className="text-xl font-bold">~{Math.ceil(questionOnlyQuestions.length * 0.15)}</p>
                         <p className="text-muted-foreground text-xs">minutes</p>
                     </CardContent>
                 </Card>
@@ -334,35 +325,65 @@ export function SurveyForm() {
         </motion.div>
       </div>
     </div>
-  ), [totalQuestions, handleNext]);
+  ), [handleNext]);
   
   const renderQuestion = useCallback((question: Question, index: number) => {
     const isHeader = question.type === 'header';
-    const currentQText = isHeader && question.id === 'darkPatternsHeader' ? `Great ${getValues('name') || 'you'}, let's identify if you experience dark patterns in quick com app` : question.text;
-    const { mainText: qMainText, exampleText: qExampleText } = (isHeader ? { mainText: currentQText, exampleText: null } : (() => {
-      const match = question.text.match(/(.*)\((Example:.*)\)/s);
-      return match ? { mainText: match[1].trim(), exampleText: match[2].trim() } : { mainText: question.text, exampleText: null };
-    })());
+    
+    let titleContent;
+    if (isHeader && question.id === 'darkPatternsHeader') {
+        const name = getValues('name') || 'you';
+        const textParts = question.text.split('{name}');
+        titleContent = (
+            <span>
+                {textParts[0]}
+                <span className="text-primary">{name}</span>
+                {textParts[1]}
+            </span>
+        );
+    } else {
+        const { mainText, exampleText } = (() => {
+            const match = question.text.match(/(.*)\((Example:.*)\)/s);
+            return match ? { mainText: match[1].trim(), exampleText: match[2].trim() } : { mainText: question.text, exampleText: null };
+        })();
+        titleContent = (
+            <>
+                {mainText}
+                {exampleText && (
+                    <CardDescription className="text-center text-xs sm:text-sm text-muted-foreground pt-2">{exampleText}</CardDescription>
+                )}
+            </>
+        );
+    }
+
     const qIsQuestion = question.type !== 'header';
     const qIndex = qIsQuestion ? questionOnlyQuestions.findIndex(q => q.id === question.id) : -1;
 
     return (
       <div key={question.id} id={`step-${index}`} className="h-full w-full flex flex-col items-center justify-center p-4">
         <div className="relative w-full max-w-md mx-auto">
-          <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full flex flex-col justify-center">
+          <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto min-h-[200px] w-full flex flex-col justify-center">
             <CardHeader className="text-center px-4 pt-6 sm:px-6">
               {qIsQuestion && (
                 <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {qIndex + 1}</p>
               )}
-              <CardTitle className="text-lg sm:text-xl font-headline font-bold">{qMainText}</CardTitle>
-               {qExampleText && (
-                  <CardDescription className="text-center text-xs sm:text-sm text-muted-foreground pt-2">{qExampleText}</CardDescription>
-              )}
+              <CardTitle className="text-lg sm:text-xl font-headline font-bold">{titleContent}</CardTitle>
             </CardHeader>
             <CardContent className="py-4 flex flex-grow items-center justify-center px-4 sm:px-6">
               {qIsQuestion ? renderInput(question) : <div />}
             </CardContent>
           </Card>
+          {isHeader && (
+             <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+                >
+                    <ArrowDown className="w-8 h-8 text-primary/70" />
+                </motion.div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -476,5 +497,3 @@ export function SurveyForm() {
     </main>
   );
 }
-
-    
