@@ -40,11 +40,9 @@ export function SurveyForm() {
   const { formState: { errors }, watch, trigger, getValues } = methods;
 
   const currentQuestion = useMemo(() => questions[step], [step]);
-  const isQuestion = currentQuestion?.type !== 'header';
-  const currentQuestionIndex = isQuestion ? questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id) : -1;
-  const totalQuestions = questionOnlyQuestions.length;
-
+  
   const questionText = useMemo(() => {
+    if (!currentQuestion) return '';
     let text = currentQuestion.text;
     if (currentQuestion.id === 'darkPatternsHeader') {
       const name = getValues('name');
@@ -60,6 +58,10 @@ export function SurveyForm() {
     }
     return { mainText: questionText, exampleText: null };
   }, [questionText]);
+
+  const isQuestion = currentQuestion?.type !== 'header';
+  const currentQuestionIndex = isQuestion ? questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id) : -1;
+  const totalQuestions = questionOnlyQuestions.length;
 
   const progress = useMemo(() => {
     if (summary || isSubmitting) return 100;
@@ -188,7 +190,10 @@ export function SurveyForm() {
                     ? 'bg-primary text-primary-foreground shadow-[0_0_25px_rgba(224,36,36,0.8)]' 
                     : 'bg-secondary/50 text-secondary-foreground hover:bg-primary/80 backdrop-blur-sm'
                 )}
-                onClick={() => methods.setValue(fieldName, option.value, { shouldValidate: true })}
+                onClick={() => {
+                  methods.setValue(fieldName, option.value, { shouldValidate: true });
+                  setTimeout(() => handleNext(), 200);
+                }}
               >
                 {option.label}
               </Button>
@@ -219,11 +224,11 @@ export function SurveyForm() {
 
   if (isIntro) {
     return (
-        <div className="w-full max-w-5xl mx-auto text-center flex flex-col justify-center flex-grow">
+        <div className="w-full max-w-lg mx-auto text-center flex flex-col justify-start pt-16 sm:pt-24 flex-grow">
              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <Logo className="mx-auto h-16 w-16 sm:h-20 sm:w-20 text-primary mb-2 sm:mb-4" />
+                <Logo className="mx-auto h-12 w-12 sm:h-20 sm:w-20 text-primary mb-2" />
                 <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold font-headline tracking-tighter">Q-Commerce Insights</h1>
-                <p className="text-muted-foreground text-sm sm:text-lg mt-2 sm:mt-4 max-w-2xl mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
+                <p className="text-muted-foreground text-sm sm:text-lg mt-2 sm:mt-4 max-w-xs sm:max-w-2xl mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
             </motion.div>
             
             <motion.div 
@@ -237,11 +242,11 @@ export function SurveyForm() {
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
                     <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
                         <CardHeader className="items-center p-2 sm:p-6">
-                            <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
-                            <CardTitle className="text-sm sm:text-xl">Questions</CardTitle>
+                            <FileText className="w-6 h-6 sm:w-10 sm:h-10 text-primary"/>
+                            <CardTitle className="text-xs sm:text-xl mt-1">Questions</CardTitle>
                         </CardHeader>
                         <CardContent className="p-2 sm:p-6 pt-0">
-                            <p className="text-2xl sm:text-4xl font-bold">{totalQuestions}</p>
+                            <p className="text-xl sm:text-4xl font-bold">{totalQuestions}</p>
                             <p className="text-muted-foreground text-xs sm:text-base">in-depth</p>
                         </CardContent>
                     </Card>
@@ -249,11 +254,11 @@ export function SurveyForm() {
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
                     <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
                         <CardHeader className="items-center p-2 sm:p-6">
-                            <Clock className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
-                            <CardTitle className="text-sm sm:text-xl">Duration</CardTitle>
+                            <Clock className="w-6 h-6 sm:w-10 sm:h-10 text-primary"/>
+                            <CardTitle className="text-xs sm:text-xl mt-1">Duration</CardTitle>
                         </CardHeader>
                         <CardContent className="p-2 sm:p-6 pt-0">
-                            <p className="text-2xl sm:text-4xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
+                            <p className="text-xl sm:text-4xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
                             <p className="text-muted-foreground text-xs sm:text-base">minutes</p>
                         </CardContent>
                     </Card>
@@ -261,8 +266,8 @@ export function SurveyForm() {
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
                     <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
                         <CardHeader className="items-center p-2 sm:p-6">
-                            <BarChart className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
-                            <CardTitle className="text-sm sm:text-xl">Reward</CardTitle>
+                            <BarChart className="w-6 h-6 sm:w-10 sm:h-10 text-primary"/>
+                            <CardTitle className="text-xs sm:text-xl mt-1">Reward</CardTitle>
                         </CardHeader>
                         <CardContent className="p-2 sm:p-6 pt-0">
                             <p className="text-sm sm:text-lg font-bold">Summary</p>
@@ -272,7 +277,7 @@ export function SurveyForm() {
                 </motion.div>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.5 }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.5 }} className="mt-auto pb-4">
                 <Button size="lg" className="mt-8 sm:mt-12 text-base sm:text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={() => setIsIntro(false)}>
                     Start Your Analysis <ArrowRight className="ml-2" />
                 </Button>
@@ -282,6 +287,8 @@ export function SurveyForm() {
   }
 
   const renderContent = () => {
+    if (!currentQuestion) return null;
+
     if (isSubmitting) {
       return (
         <div className="text-center flex flex-col items-center justify-center min-h-[300px]">
@@ -351,8 +358,8 @@ export function SurveyForm() {
                   <CardTitle className="text-base sm:text-lg md:text-xl font-headline font-bold">{mainText}</CardTitle>
                 </CardHeader>
 
-                <CardContent className="my-4 min-h-[220px] sm:min-h-[260px] flex items-center justify-center px-4 sm:px-6">
-                  {isQuestion && renderInput(currentQuestion)}
+                <CardContent className="my-4 min-h-[200px] sm:min-h-[220px] flex items-center justify-center px-4 sm:px-6">
+                  {isQuestion ? renderInput(currentQuestion) : <div />}
                 </CardContent>
               </Card>
 
@@ -387,15 +394,14 @@ export function SurveyForm() {
   };
   
   return (
-    <main className="relative flex flex-col items-center justify-center min-h-screen w-full bg-background p-4 overflow-hidden">
+    <main className="relative flex flex-col items-center min-h-screen w-full bg-background p-4 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent"></div>
           <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse"></div>
           <div className="absolute bottom-[-30%] right-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse animation-delay-4000"></div>
         </div>
 
-
-      <div className="z-10 w-full flex-grow flex items-center justify-center pb-20 sm:pb-24">
+      <div className="z-10 w-full flex-grow flex flex-col items-center justify-center">
         {renderContent()}
       </div>
 
