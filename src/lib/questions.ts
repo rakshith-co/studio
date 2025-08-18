@@ -14,16 +14,16 @@ export type Question = {
 
 export const questions: Question[] = [
   {
-    id: 'name',
-    type: 'text',
-    text: 'What is your name? (Optional)',
-    required: false,
-  },
-  {
     id: 'age',
     type: 'number',
     text: 'What is your age (in completed years)?',
     required: true,
+  },
+  {
+    id: 'name',
+    type: 'text',
+    text: 'What is your name? (Optional)',
+    required: false,
   },
   {
     id: 'gender',
