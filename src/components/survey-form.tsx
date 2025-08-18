@@ -168,7 +168,7 @@ export function SurveyForm() {
                 className={cn(
                   `flex-1 transition-all duration-200 transform hover:scale-105 rounded-full px-2 py-6 text-xs sm:text-sm`,
                   watchedValue === option.value 
-                    ? 'bg-primary text-primary-foreground shadow-[0_0_15px_rgba(224,36,36,0.7)]' 
+                    ? 'bg-primary text-primary-foreground shadow-[0_0_25px_rgba(224,36,36,0.8)]' 
                     : 'bg-secondary text-secondary-foreground hover:bg-primary/80'
                 )}
                 onClick={() => methods.setValue(fieldName, option.value, { shouldValidate: true })}
@@ -218,7 +218,7 @@ export function SurveyForm() {
                 }}
             >
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                    <Card className="bg-card/80 backdrop-blur-sm border-primary/20 h-full">
+                    <Card className="bg-card/80 backdrop-blur border-primary/20 h-full">
                         <CardHeader className="items-center">
                             <FileText className="w-10 h-10 text-primary"/>
                             <CardTitle>Questions</CardTitle>
@@ -230,7 +230,7 @@ export function SurveyForm() {
                     </Card>
                 </motion.div>
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                    <Card className="bg-card/80 backdrop-blur-sm border-primary/20 h-full">
+                    <Card className="bg-card/80 backdrop-blur border-primary/20 h-full">
                         <CardHeader className="items-center">
                             <Clock className="w-10 h-10 text-primary"/>
                             <CardTitle>Duration</CardTitle>
@@ -242,7 +242,7 @@ export function SurveyForm() {
                     </Card>
                 </motion.div>
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                    <Card className="bg-card/80 backdrop-blur-sm border-primary/20 h-full">
+                    <Card className="bg-card/80 backdrop-blur border-primary/20 h-full">
                         <CardHeader className="items-center">
                             <BarChart className="w-10 h-10 text-primary"/>
                             <CardTitle>Reward</CardTitle>
@@ -256,7 +256,7 @@ export function SurveyForm() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.5 }}>
-                <Button size="lg" className="mt-12 text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(224,36,36,0.6)]" onClick={() => setIsIntro(false)}>
+                <Button size="lg" className="mt-12 text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={() => setIsIntro(false)}>
                     Start Your Analysis <ArrowRight className="ml-2" />
                 </Button>
             </motion.div>
@@ -278,7 +278,7 @@ export function SurveyForm() {
       return (
         <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
            {showConfetti && <Confetti />}
-          <Card className="bg-card/70 border-primary/50 backdrop-blur-sm max-w-2xl mx-auto text-center shadow-2xl shadow-primary/10">
+          <Card className="bg-card/80 border-primary/50 backdrop-blur-lg max-w-2xl mx-auto text-center shadow-2xl shadow-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center justify-center gap-3 text-4xl font-bold text-primary tracking-tighter">
                 <Sparkles className="w-8 h-8"/> Your Insights Report
@@ -326,7 +326,7 @@ export function SurveyForm() {
               }}
               className="w-full"
             >
-              <Card className="bg-card/70 border-primary/20 backdrop-blur-sm shadow-xl shadow-primary/5">
+              <Card className="bg-card/80 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10">
                 <CardHeader className="text-center">
                   {isQuestion && (
                     <p className="text-primary font-bold mb-2 tracking-widest">QUESTION {currentQuestionIndex + 1}</p>
@@ -342,11 +342,11 @@ export function SurveyForm() {
                   <ArrowLeft className="mr-2" /> Back
                 </Button>
                 {currentQuestion.type === 'header' ? (
-                  <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 shadow-[0_0_15px_rgba(224,36,36,0.5)]">
+                  <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(224,36,36,0.6)]">
                     Continue <ArrowRight className="ml-2" />
                   </Button>
                 ) : (
-                  <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 shadow-[0_0_15px_rgba(224,36,36,0.5)]">
+                  <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(224,36,36,0.6)]">
                     {step === questions.length - 1 ? 'Finish & See Results' : 'Next'} <ArrowRight className="ml-2" />
                   </Button>
                 )}
@@ -361,9 +361,9 @@ export function SurveyForm() {
 
   return (
     <main className="relative flex flex-col items-center justify-center min-h-screen w-full bg-background p-4 md:p-8 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent z-0"></div>
-        <div className="absolute top-[-20%] left-[10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[150px] opacity-30"></div>
-        <div className="absolute bottom-[-20%] right-[10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[150px] opacity-30"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/20 via-transparent to-transparent z-0"></div>
+        <div className="absolute top-[-20%] left-[10%] w-[40%] h-[40%] bg-primary/30 rounded-full blur-[180px] opacity-40"></div>
+        <div className="absolute bottom-[-20%] right-[10%] w-[40%] h-[40%] bg-primary/30 rounded-full blur-[180px] opacity-40"></div>
 
       <div className="z-10 w-full flex-grow flex items-center justify-center">
         {renderContent()}
@@ -375,7 +375,7 @@ export function SurveyForm() {
                 <span>Progress</span>
                 <span>{Math.round(progress)}%</span>
             </div>
-          <Progress value={progress} className="h-2 [&>*]:bg-primary [&>*]:shadow-[0_0_10px_hsl(var(--primary))]" />
+          <Progress value={progress} className="h-2 progress-bar-shine" />
         </div>
       )}
     </main>
