@@ -51,11 +51,7 @@ export function SurveyForm() {
     if (summary || isSubmitting) return 100;
     if (isIntro) return 0;
     
-    // Find the index of the current question in the full 'questions' array.
-    const overallIndex = currentStep;
-
-    // Count how many non-header questions have been passed.
-    const questionsAnswered = questions.slice(0, overallIndex).filter(q => q.type !== 'header').length;
+    const questionsAnswered = questions.slice(0, currentStep).filter(q => q.type !== 'header').length;
     
     return (questionsAnswered / totalQuestions) * 100;
   }, [currentStep, totalQuestions, summary, isSubmitting, isIntro]);
@@ -377,56 +373,57 @@ export function SurveyForm() {
   );
 
   return (
-    <main className="relative h-screen w-full bg-background overflow-hidden">
+    <main className="relative h-screen w-full bg-background overflow-hidden flex items-center justify-center">
       <div className="absolute inset-0 -z-20">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent"></div>
         <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse"></div>
         <div className="absolute bottom-[-30%] right-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse animation-delay-4000"></div>
       </div>
       
-      {!isIntro && !summary && !isSubmitting && (
-        <div className="fixed left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2">
-            <div className="relative h-64 w-2 rounded-full overflow-hidden bg-primary/20">
-                <motion.div 
-                  className="absolute bottom-0 w-full bg-primary" 
-                  style={{ height: `${progress}%`}}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
-                />
-            </div>
-            <span className="text-xs font-bold text-primary">{Math.round(progress)}%</span>
-        </div>
-      )}
-      
-      <FormProvider {...methods}>
-        <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
-          <div ref={mainContainerRef} className="h-full w-full overflow-y-auto overflow-x-hidden" style={{ scrollSnapType: 'y mandatory' }}>
-             <AnimatePresence mode="wait">
-                <motion.div
-                    key={isIntro ? 'intro' : currentStep}
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -50 }}
-                    transition={{ duration: 0.5, ease: 'easeInOut' }}
-                    className="h-full w-full flex-shrink-0"
-                    style={{ scrollSnapAlign: 'start' }}
-                >
-                    <ActiveScreen />
-                </motion.div>
-            </AnimatePresence>
+      <div className="relative w-full h-full flex items-center justify-center">
+        {!isIntro && !summary && !isSubmitting && (
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2">
+              <div className="relative h-64 w-2 rounded-full overflow-hidden bg-primary/20">
+                  <motion.div 
+                    className="absolute bottom-0 w-full bg-primary" 
+                    style={{ height: `${progress}%`}}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                  />
+              </div>
+              <span className="text-xs font-bold text-primary">{Math.round(progress)}%</span>
           </div>
-        </form>
-      </FormProvider>
+        )}
+        
+        <FormProvider {...methods}>
+          <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full w-full max-w-lg">
+            <div ref={mainContainerRef} className="h-full w-full overflow-hidden">
+               <AnimatePresence mode="wait">
+                  <motion.div
+                      key={isIntro ? 'intro' : currentStep}
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -50 }}
+                      transition={{ duration: 0.5, ease: 'easeInOut' }}
+                      className="h-full w-full flex-shrink-0 flex items-center justify-center"
+                  >
+                      <ActiveScreen />
+                  </motion.div>
+              </AnimatePresence>
+            </div>
+          </form>
+        </FormProvider>
 
-      {!isIntro && !summary && !isSubmitting && (
-        <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2">
-            <Button type="button" variant="ghost" onClick={handlePrev} disabled={currentStep === 0}>
-              <ArrowUp className="h-5 w-5" />
-            </Button>
-            <Button type="button" variant="ghost" onClick={handleNext} disabled={(currentQuestion?.type === 'likert' || (currentQuestion?.type === 'radio' && currentStep !== questions.length -1))}>
-               <ArrowDown className="h-5 w-5" />
-            </Button>
-        </div>
-      )}
+        {!isIntro && !summary && !isSubmitting && (
+          <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2">
+              <Button type="button" variant="ghost" onClick={handlePrev} disabled={currentStep === 0}>
+                <ArrowUp className="h-5 w-5" />
+              </Button>
+              <Button type="button" variant="ghost" onClick={handleNext} disabled={(currentQuestion?.type === 'likert' || (currentQuestion?.type === 'radio' && currentStep !== questions.length -1))}>
+                 <ArrowDown className="h-5 w-5" />
+              </Button>
+          </div>
+        )}
+      </div>
     </main>
   );
 }
