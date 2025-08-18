@@ -1,8 +1,34 @@
+
 'use server';
 
+import { GoogleSpreadsheet } from 'google-spreadsheet';
+import { JWT } from 'google-auth-library';
 import { summarizeSurveyResponses } from '@/ai/flows/summarize-survey-responses';
 import { questionOnlyQuestions, questions } from '@/lib/questions';
 import type { SurveySchema } from '@/lib/schema';
+
+async function appendToGoogleSheet(data: Record<string, any>) {
+  const serviceAccountAuth = new JWT({
+    email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
+
+  const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID!, serviceAccountAuth);
+
+  await doc.loadInfo(); 
+  const sheet = doc.sheetsByIndex[0]; 
+  
+  const headers = Object.keys(data);
+  const sheetHeaders = sheet.headerValues;
+
+  if (!sheetHeaders || sheetHeaders.length === 0) {
+      await sheet.setHeaderRow(headers);
+  }
+
+  await sheet.addRow(data);
+}
+
 
 export async function submitSurvey(data: SurveySchema) {
   try {
@@ -29,16 +55,16 @@ export async function submitSurvey(data: SurveySchema) {
 
     const summaryPromise = summarizeSurveyResponses({ demographics, responses });
     
-    // Placeholder for Google Sheets integration
-    const googleSheetsPromise = new Promise<void>((resolve) => {
-      console.log('--- SURVEY DATA FOR GOOGLE SHEETS ---');
-      console.log({ ...demographicsData, ...data });
-      console.log('------------------------------------');
-      // In a real application, you would make an API call to a service 
-      // or use a library like 'google-spreadsheet' to append a row to your sheet.
-      // This requires setting up authentication (e.g., a service account) securely.
-      resolve();
+    const googleSheetsPromise = appendToGoogleSheet({
+      Timestamp: new Date().toISOString(),
+      ...demographicsData,
+      ...data,
+    }).catch(err => {
+        console.error("Error writing to Google Sheet:", err);
+        // We can decide if we want to fail the whole request or just log the error
+        // For now, we'll log it and let the survey submission succeed.
     });
+
 
     const [summaryResult] = await Promise.all([summaryPromise, googleSheetsPromise]);
 
