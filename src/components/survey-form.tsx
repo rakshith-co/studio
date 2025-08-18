@@ -45,13 +45,14 @@ export function SurveyForm() {
   const totalQuestions = questionOnlyQuestions.length;
 
   const progress = useMemo(() => {
+    if (summary || isSubmitting) return 100;
     if (currentQuestionIndex === -1) {
       if (step === 0) return 0;
       const prevQuestionIndex = questionOnlyQuestions.findIndex(q => q.id === questions[step - 1]?.id);
       return ((prevQuestionIndex + 1) / totalQuestions) * 100;
     }
     return ((currentQuestionIndex) / totalQuestions) * 100;
-  }, [currentQuestionIndex, totalQuestions, step]);
+  }, [currentQuestionIndex, totalQuestions, step, summary, isSubmitting]);
   
   const questionText = useMemo(() => {
     let text = currentQuestion.text;
@@ -71,12 +72,12 @@ export function SurveyForm() {
   }, [questionText]);
 
   useEffect(() => {
-    if (progress === 100) {
+    if (progress === 100 && summary) {
       setShowConfetti(true);
       const timer = setTimeout(() => setShowConfetti(false), 5000);
       return () => clearTimeout(timer);
     }
-  }, [progress]);
+  }, [progress, summary]);
 
   const handleNext = async () => {
     let isValid = true;
@@ -150,14 +151,14 @@ export function SurveyForm() {
             {question.options?.map((option) => (
               <div key={option.value} className="flex items-center">
                 <RadioGroupItem value={option.value} id={`${question.id}-${option.value}`} />
-                <Label htmlFor={`${question.id}-${option.value}`} className="ml-3 text-base sm:text-lg cursor-pointer hover:text-primary transition-colors">{option.label}</Label>
+                <Label htmlFor={`${question.id}-${option.value}`} className="ml-3 text-sm sm:text-base cursor-pointer hover:text-primary transition-colors">{option.label}</Label>
               </div>
             ))}
             {question.type === 'radio-other' && (
                <>
                 <div className="flex items-center">
                     <RadioGroupItem value="other" id={`${question.id}-other`} />
-                    <Label htmlFor={`${question.id}-other`} className="ml-3 text-base sm:text-lg cursor-pointer">Other</Label>
+                    <Label htmlFor={`${question.id}-other`} className="ml-3 text-sm sm:text-base cursor-pointer">Other</Label>
                 </div>
                 {watch('gender') === 'other' && (
                     <motion.div initial={{opacity: 0, height: 0}} animate={{opacity: 1, height: 'auto'}} transition={{duration: 0.3}}>
@@ -175,14 +176,14 @@ export function SurveyForm() {
         );
       case 'likert':
         return (
-          <div className="flex flex-col sm:flex-row justify-center gap-2 md:gap-4 w-full">
+          <div className="flex flex-col justify-center gap-2 md:gap-3 w-full">
             {likertOptions.map(option => (
               <Button
                 key={option.value}
                 type="button"
                 variant={watchedValue === option.value ? 'default' : 'secondary'}
                 className={cn(
-                  `flex-1 transition-all duration-200 transform hover:scale-105 rounded-full px-2 py-4 sm:py-6 text-xs sm:text-sm`,
+                  `flex-1 transition-all duration-200 transform hover:scale-105 rounded-full px-4 py-3 text-sm`,
                   watchedValue === option.value 
                     ? 'bg-primary text-primary-foreground shadow-[0_0_25px_rgba(224,36,36,0.8)]' 
                     : 'bg-secondary/50 text-secondary-foreground hover:bg-primary/80 backdrop-blur-sm'
@@ -221,8 +222,8 @@ export function SurveyForm() {
         <div className="w-full max-w-5xl mx-auto text-center">
              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <Logo className="mx-auto h-20 w-20 text-primary mb-4" />
-                <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold font-headline tracking-tighter">Q-Commerce Insights</h1>
-                <p className="text-muted-foreground text-base sm:text-lg md:text-xl mt-4 max-w-2xl mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
+                <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold font-headline tracking-tighter">Q-Commerce Insights</h1>
+                <p className="text-muted-foreground text-sm sm:text-lg md:text-xl mt-4 max-w-2xl mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
             </motion.div>
             
             <motion.div 
@@ -327,7 +328,7 @@ export function SurveyForm() {
     
     return (
       <FormProvider {...methods}>
-        <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="w-full max-w-3xl mx-auto">
+        <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="w-full max-w-md mx-auto">
           <AnimatePresence initial={false} custom={direction} mode="wait">
             <motion.div
               key={step}
@@ -346,48 +347,49 @@ export function SurveyForm() {
                 <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl">
                   <CardHeader className="text-center px-4 sm:px-6">
                     {isQuestion && (
-                      <p className="text-primary font-bold mb-2 tracking-widest text-sm">QUESTION {currentQuestionIndex + 1}</p>
+                      <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {currentQuestionIndex + 1}</p>
                     )}
-                    <CardTitle className="text-xl sm:text-2xl md:text-3xl font-headline font-bold">{mainText}</CardTitle>
+                    <CardTitle className="text-base sm:text-lg md:text-xl font-headline font-bold">{mainText}</CardTitle>
                   </CardHeader>
-                  <CardContent className="my-4 sm:my-8 min-h-[120px] flex items-center justify-center px-4 sm:px-6">
+
+                  <CardContent className="my-4 min-h-[220px] sm:min-h-[260px] flex items-center justify-center px-4 sm:px-6">
                     {isQuestion && renderInput(currentQuestion)}
                   </CardContent>
                 </Card>
+
                 {exampleText && (
                    <motion.div initial={{opacity: 0}} animate={{opacity: 1}} transition={{delay: 0.2}}>
-                    <Card className="bg-card/30 border-primary/10 backdrop-blur-md shadow-lg shadow-primary/5 rounded-2xl">
-                        <CardContent className="p-4">
-                            <p className="text-sm text-muted-foreground text-center">{exampleText}</p>
-                        </CardContent>
-                    </Card>
+                      <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl mt-4">
+                          <CardContent className="p-4">
+                              <CardDescription className="text-center text-xs sm:text-sm text-muted-foreground">{exampleText}</CardDescription>
+                          </CardContent>
+                      </Card>
                    </motion.div>
-                )}
-              </div>
-              <div className="flex justify-between items-center mt-8">
-                <Button type="button" variant="ghost" onClick={handlePrev} disabled={step === 0}>
-                  <ArrowLeft className="mr-2" /> Back
-                </Button>
-                {currentQuestion.type === 'header' ? (
-                  <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(224,36,36,0.6)]">
-                    Continue <ArrowRight className="ml-2" />
-                  </Button>
-                ) : (
-                  <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(224,36,36,0.6)]">
-                    {step === questions.length - 1 ? 'Finish & See Results' : 'Next'} <ArrowRight className="ml-2" />
-                  </Button>
                 )}
               </div>
             </motion.div>
           </AnimatePresence>
+          <div className="flex justify-between items-center mt-6">
+            <Button type="button" variant="ghost" onClick={handlePrev} disabled={step === 0}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            </Button>
+            {currentQuestion.type === 'header' ? (
+              <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(224,36,36,0.6)]">
+                Continue <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(224,36,36,0.6)]">
+                {step === questions.length - 1 ? 'Finish & See Results' : 'Next'} <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </form>
       </FormProvider>
     );
   };
   
-
   return (
-    <main className="relative flex flex-col items-center justify-center min-h-screen w-full bg-background p-4 md:p-8 overflow-hidden">
+    <main className="relative flex flex-col items-center justify-center min-h-screen w-full bg-background p-4 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent"></div>
           <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse"></div>
@@ -395,13 +397,13 @@ export function SurveyForm() {
         </div>
 
 
-      <div className="z-10 w-full flex-grow flex items-center justify-center">
+      <div className="z-10 w-full flex-grow flex items-center justify-center pb-24">
         {renderContent()}
       </div>
 
       {!summary && !isSubmitting && !isIntro && (
-        <div className="w-full max-w-3xl fixed bottom-8 px-4 z-20">
-            <div className="flex justify-between text-sm text-muted-foreground mb-1">
+        <div className="w-full max-w-md fixed bottom-8 left-1/2 -translate-x-1/2 px-4 z-20">
+            <div className="flex justify-between text-xs text-muted-foreground mb-1">
                 <span>Progress</span>
                 <span>{Math.round(progress)}%</span>
             </div>
