@@ -380,7 +380,7 @@ export function SurveyForm() {
       
       <FormProvider {...methods}>
         <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
-          <div ref={setScrollContainer} className="h-full w-full overflow-y-auto snap-y snap-mandatory scroll-smooth pl-12">
+          <div ref={setScrollContainer} className="h-full w-full overflow-hidden snap-y snap-mandatory scroll-smooth pl-12">
             {renderIntro()}
             {questions.map((q, i) => (
                 <div key={q.id}>
