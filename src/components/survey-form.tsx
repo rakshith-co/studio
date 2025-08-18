@@ -150,14 +150,14 @@ export function SurveyForm() {
             {question.options?.map((option) => (
               <div key={option.value} className="flex items-center">
                 <RadioGroupItem value={option.value} id={`${question.id}-${option.value}`} />
-                <Label htmlFor={`${question.id}-${option.value}`} className="ml-3 text-lg cursor-pointer hover:text-primary transition-colors">{option.label}</Label>
+                <Label htmlFor={`${question.id}-${option.value}`} className="ml-3 text-base sm:text-lg cursor-pointer hover:text-primary transition-colors">{option.label}</Label>
               </div>
             ))}
             {question.type === 'radio-other' && (
                <>
                 <div className="flex items-center">
                     <RadioGroupItem value="other" id={`${question.id}-other`} />
-                    <Label htmlFor={`${question.id}-other`} className="ml-3 text-lg cursor-pointer">Other</Label>
+                    <Label htmlFor={`${question.id}-other`} className="ml-3 text-base sm:text-lg cursor-pointer">Other</Label>
                 </div>
                 {watch('gender') === 'other' && (
                     <motion.div initial={{opacity: 0, height: 0}} animate={{opacity: 1, height: 'auto'}} transition={{duration: 0.3}}>
@@ -182,7 +182,7 @@ export function SurveyForm() {
                 type="button"
                 variant={watchedValue === option.value ? 'default' : 'secondary'}
                 className={cn(
-                  `flex-1 transition-all duration-200 transform hover:scale-105 rounded-full px-2 py-6 text-xs sm:text-sm`,
+                  `flex-1 transition-all duration-200 transform hover:scale-105 rounded-full px-2 py-4 sm:py-6 text-xs sm:text-sm`,
                   watchedValue === option.value 
                     ? 'bg-primary text-primary-foreground shadow-[0_0_25px_rgba(224,36,36,0.8)]' 
                     : 'bg-secondary/50 text-secondary-foreground hover:bg-primary/80 backdrop-blur-sm'
@@ -221,8 +221,8 @@ export function SurveyForm() {
         <div className="w-full max-w-5xl mx-auto text-center">
              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <Logo className="mx-auto h-20 w-20 text-primary mb-4" />
-                <h1 className="text-5xl md:text-7xl font-bold font-headline tracking-tighter">Q-Commerce Insights</h1>
-                <p className="text-muted-foreground text-lg md:text-xl mt-4 max-w-2xl mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold font-headline tracking-tighter">Q-Commerce Insights</h1>
+                <p className="text-muted-foreground text-base sm:text-lg md:text-xl mt-4 max-w-2xl mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
             </motion.div>
             
             <motion.div 
@@ -296,15 +296,15 @@ export function SurveyForm() {
            {showConfetti && <Confetti />}
           <Card className="bg-card/50 border-primary/50 backdrop-blur-lg max-w-2xl mx-auto text-center shadow-2xl shadow-primary/20">
             <CardHeader>
-              <CardTitle className="flex items-center justify-center gap-3 text-4xl font-bold text-primary tracking-tighter">
+              <CardTitle className="flex items-center justify-center gap-3 text-3xl sm:text-4xl font-bold text-primary tracking-tighter">
                 <Sparkles className="w-8 h-8"/> Your Insights Report
               </CardTitle>
               <CardDescription>Based on your survey responses.</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-lg whitespace-pre-wrap font-medium p-4 bg-black/20 rounded-lg">{summary}</p>
-              <p className="mt-6 font-bold text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
-              <div className="mt-6 flex justify-center gap-4">
+              <p className="text-base sm:text-lg whitespace-pre-wrap font-medium p-4 bg-black/20 rounded-lg">{summary}</p>
+              <p className="mt-6 font-bold text-lg sm:text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
+              <div className="mt-6 flex flex-col sm:flex-row justify-center gap-4">
                 <Button onClick={() => window.location.reload()}>Start Over</Button>
                 <Button
                   variant="outline"
@@ -344,13 +344,13 @@ export function SurveyForm() {
             >
               <div className="space-y-4">
                 <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl">
-                  <CardHeader className="text-center">
+                  <CardHeader className="text-center px-4 sm:px-6">
                     {isQuestion && (
-                      <p className="text-primary font-bold mb-2 tracking-widest">QUESTION {currentQuestionIndex + 1}</p>
+                      <p className="text-primary font-bold mb-2 tracking-widest text-sm">QUESTION {currentQuestionIndex + 1}</p>
                     )}
-                    <CardTitle className="text-2xl md:text-3xl font-headline font-bold">{mainText}</CardTitle>
+                    <CardTitle className="text-xl sm:text-2xl md:text-3xl font-headline font-bold">{mainText}</CardTitle>
                   </CardHeader>
-                  <CardContent className="my-8 min-h-[120px] flex items-center justify-center">
+                  <CardContent className="my-4 sm:my-8 min-h-[120px] flex items-center justify-center px-4 sm:px-6">
                     {isQuestion && renderInput(currentQuestion)}
                   </CardContent>
                 </Card>
