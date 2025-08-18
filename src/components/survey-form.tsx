@@ -96,6 +96,7 @@ export function SurveyForm() {
   };
 
   const handlePrev = () => {
+    if (isIntro) return;
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     } else {
@@ -395,7 +396,7 @@ export function SurveyForm() {
         )}
         
         <FormProvider {...methods}>
-          <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full w-full max-w-lg pl-12">
+          <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full w-full max-w-lg pl-16">
             <div ref={mainContainerRef} className="h-full w-full overflow-hidden">
                <AnimatePresence mode="wait">
                   <motion.div
@@ -415,7 +416,7 @@ export function SurveyForm() {
 
         {!isIntro && !summary && !isSubmitting && (
           <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2">
-              <Button type="button" variant="ghost" onClick={handlePrev} disabled={currentStep === 0}>
+              <Button type="button" variant="ghost" onClick={handlePrev} disabled={isIntro || currentStep === 0}>
                 <ArrowUp className="h-5 w-5" />
               </Button>
               <Button type="button" variant="ghost" onClick={handleNext} disabled={(currentQuestion?.type === 'likert' || (currentQuestion?.type === 'radio' && currentStep !== questions.length -1))}>
