@@ -24,6 +24,32 @@ import { Progress } from '@/components/ui/progress';
 
 const formId = 'q-commerce-survey-form';
 
+const ActiveScreen = React.memo(function ActiveScreen({
+  isIntro,
+  summary,
+  isSubmitting,
+  currentStep,
+  renderIntro,
+  renderSummary,
+  renderQuestion,
+}: {
+  isIntro: boolean;
+  summary: string | null;
+  isSubmitting: boolean;
+  currentStep: number;
+  renderIntro: () => JSX.Element;
+  renderSummary: () => JSX.Element;
+  renderQuestion: (question: Question, index: number) => JSX.Element;
+}) {
+    if (isIntro) return renderIntro();
+    if (summary || isSubmitting) return renderSummary();
+    if (currentStep < questions.length) {
+      return renderQuestion(questions[currentStep], currentStep);
+    }
+    return renderIntro();
+});
+ActiveScreen.displayName = 'ActiveScreen';
+
 export function SurveyForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,17 +74,26 @@ export function SurveyForm() {
   
   const currentQuestionIndex = useMemo(() => {
     if (isIntro || !currentQuestion || currentQuestion.type === 'header') return -1;
-    return questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id);
+    const qIndex = questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id);
+    return qIndex;
   }, [isIntro, currentStep, currentQuestion]);
   
   const progress = useMemo(() => {
     if (summary || isSubmitting) return 100;
     if (isIntro) return 0;
-    if (currentQuestionIndex === -1) return 0;
-    
-    // Calculate progress based on the current question's index
+    if (currentQuestionIndex === -1) {
+        // Find the next question to calculate progress for headers
+        const nextQuestionIndex = questions.slice(currentStep + 1).findIndex(q => q.type !== 'header');
+        if (nextQuestionIndex !== -1) {
+            const globalNextIndex = currentStep + 1 + nextQuestionIndex;
+            const question = questions[globalNextIndex];
+            const qIndex = questionOnlyQuestions.findIndex(q => q.id === question.id);
+            return (qIndex / totalQuestions) * 100;
+        }
+        return 0;
+    }
     return ((currentQuestionIndex) / totalQuestions) * 100;
-  }, [currentQuestionIndex, totalQuestions, summary, isSubmitting, isIntro]);
+  }, [currentQuestionIndex, totalQuestions, summary, isSubmitting, isIntro, currentStep]);
 
 
   useEffect(() => {
@@ -69,7 +104,7 @@ export function SurveyForm() {
     }
   }, [progress, summary]);
 
-  const handleNext = async () => {
+  const handleNext = useCallback(async () => {
     if (isIntro) {
       setIsIntro(false);
       setCurrentStep(0);
@@ -97,16 +132,16 @@ export function SurveyForm() {
         await methods.handleSubmit(onSubmit)();
       }
     }
-  };
+  }, [isIntro, currentStep, questions, isQuestion, currentQuestion, trigger, getValues, methods]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (isIntro) return;
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     } else {
       setIsIntro(true);
     }
-  };
+  }, [isIntro, currentStep]);
   
   const onSubmit = async (data: SurveySchema) => {
     setIsSubmitting(true);
@@ -367,16 +402,6 @@ export function SurveyForm() {
     </div>
   ), [isSubmitting, summary, showConfetti]);
 
-  const ActiveScreen = useCallback(() => {
-    if (isIntro) return renderIntro();
-    if (summary) return renderSummary();
-    if (isSubmitting) return renderSummary();
-    if (currentStep < questions.length) {
-      return renderQuestion(questions[currentStep], currentStep);
-    }
-    return renderIntro();
-  }, [isIntro, summary, isSubmitting, currentStep, renderIntro, renderSummary, renderQuestion]);
-
   return (
     <main className="relative h-screen w-full bg-background overflow-hidden flex items-center justify-center">
       <div className="absolute inset-0 -z-20">
@@ -411,7 +436,15 @@ export function SurveyForm() {
                       transition={{ duration: 0.5, ease: 'easeInOut' }}
                       className="h-full w-full flex-shrink-0 flex items-center justify-center"
                   >
-                      <ActiveScreen />
+                      <ActiveScreen 
+                        isIntro={isIntro}
+                        summary={summary}
+                        isSubmitting={isSubmitting}
+                        currentStep={currentStep}
+                        renderIntro={renderIntro}
+                        renderSummary={renderSummary}
+                        renderQuestion={renderQuestion}
+                      />
                   </motion.div>
               </AnimatePresence>
             </div>
