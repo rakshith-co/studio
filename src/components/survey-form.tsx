@@ -52,7 +52,23 @@ export function SurveyForm() {
     }
     return ((currentQuestionIndex) / totalQuestions) * 100;
   }, [currentQuestionIndex, totalQuestions, step]);
+  
+  const questionText = useMemo(() => {
+    let text = currentQuestion.text;
+    if (currentQuestion.id === 'darkPatternsHeader') {
+      const name = getValues('name');
+      text = `Great ${name ? name : 'you'}, let's identify if you experience dark patterns in quick com app`;
+    }
+    return text;
+  }, [currentQuestion, getValues]);
 
+  const { mainText, exampleText } = useMemo(() => {
+    const match = questionText.match(/(.*)\((Example:.*)\)/s);
+    if (match) {
+        return { mainText: match[1].trim(), exampleText: match[2].trim() };
+    }
+    return { mainText: questionText, exampleText: null };
+  }, [questionText]);
 
   useEffect(() => {
     if (progress === 100) {
@@ -309,20 +325,6 @@ export function SurveyForm() {
       );
     }
     
-    let questionText = currentQuestion.text;
-    if (currentQuestion.id === 'darkPatternsHeader') {
-      const name = getValues('name');
-      questionText = `Great ${name ? name : 'you'}, let's identify if you experience dark patterns in quick com app`;
-    }
-
-    const { mainText, exampleText } = useMemo(() => {
-        const match = questionText.match(/(.*)\((Example:.*)\)/s);
-        if (match) {
-            return { mainText: match[1].trim(), exampleText: match[2].trim() };
-        }
-        return { mainText: questionText, exampleText: null };
-    }, [questionText]);
-
     return (
       <FormProvider {...methods}>
         <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="w-full max-w-3xl mx-auto">
