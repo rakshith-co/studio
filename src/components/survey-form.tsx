@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Confetti } from './confetti';
@@ -28,7 +27,7 @@ export function SurveyForm() {
   const [summary, setSummary] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isIntro, setIsIntro] = useState(true);
-  const [scrollContainer, setScrollContainer] = useState<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const { toast } = useToast();
 
@@ -57,13 +56,22 @@ export function SurveyForm() {
 
   const progress = useMemo(() => {
     if (summary || isSubmitting) return 100;
+    if (isIntro) return 0;
     if (currentQuestionIndex === -1) {
-      if (step === 0) return 0;
-      const prevQuestionIndex = questionOnlyQuestions.findIndex(q => q.id === questions[step - 1]?.id);
-      return ((prevQuestionIndex + 1) / totalQuestions) * 100;
+       // For headers, find the last actual question and calculate progress from there.
+       let lastQuestionIndex = -1;
+       for (let i = step -1; i >=0; i--) {
+           const prevQ = questions[i];
+           if (prevQ.type !== 'header') {
+               lastQuestionIndex = questionOnlyQuestions.findIndex(q => q.id === prevQ.id);
+               break;
+           }
+       }
+       return ((lastQuestionIndex + 1) / totalQuestions) * 100;
     }
     return ((currentQuestionIndex) / totalQuestions) * 100;
-  }, [currentQuestionIndex, totalQuestions, step, summary, isSubmitting]);
+  }, [currentQuestionIndex, totalQuestions, step, summary, isSubmitting, isIntro]);
+
 
   useEffect(() => {
     if (progress === 100 && summary) {
@@ -73,33 +81,40 @@ export function SurveyForm() {
     }
   }, [progress, summary]);
 
-  const scrollToStep = (newStep: number) => {
-    if (scrollContainer) {
-      const vh = window.innerHeight;
-      let scrollPosition;
-      if (newStep === -1) {
-        scrollPosition = 0; // Intro
-      } else if (newStep >= questions.length) {
-        scrollPosition = (questions.length + 1) * vh; // Summary
-      } else {
-        scrollPosition = (newStep + 1) * vh;
-      }
-      scrollContainer.scrollTo({
-        top: scrollPosition,
-        behavior: 'smooth'
-      });
-      if (newStep !== -1) {
-        setStep(newStep);
-      }
+  const scrollToStep = (newStepIndex: number) => {
+    if (scrollContainerRef.current) {
+        const stepHeight = scrollContainerRef.current.clientHeight;
+        let topPosition = 0;
+
+        if (newStepIndex === -1) { // Intro
+            setIsIntro(true);
+            topPosition = 0;
+        } else if (newStepIndex >= questions.length) { // Summary
+            setIsIntro(false);
+            topPosition = (questions.length + 1) * stepHeight;
+        } else { // Question
+            setIsIntro(false);
+            topPosition = (newStepIndex + 1) * stepHeight;
+        }
+
+        scrollContainerRef.current.scrollTo({
+            top: topPosition,
+            behavior: 'smooth'
+        });
+        
+        if (newStepIndex !== -1 && newStepIndex < questions.length) {
+            setStep(newStepIndex);
+        }
     }
   };
 
   const handleNext = async () => {
     if (isIntro) {
-      setIsIntro(false);
       scrollToStep(0);
       return;
     }
+  
+    if (step >= questions.length) return;
 
     let isValid = true;
     if (isQuestion && currentQuestion) {
@@ -126,8 +141,7 @@ export function SurveyForm() {
     if (step > 0) {
       scrollToStep(step - 1);
     } else {
-        setIsIntro(true)
-        scrollToStep(-1)
+      scrollToStep(-1);
     }
   };
   
@@ -250,7 +264,7 @@ export function SurveyForm() {
   };
 
   const renderIntro = () => (
-    <div id="intro-card" className="h-screen w-full flex flex-col justify-center items-center text-center p-4 snap-center">
+    <div id="intro-card" className="h-screen w-full flex flex-col justify-center items-center text-center p-4 snap-center shrink-0">
       <div className="flex flex-col justify-center items-center h-full max-w-sm mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <Logo className="mx-auto h-12 w-12 text-primary mb-2" />
@@ -325,7 +339,7 @@ export function SurveyForm() {
     const qIndex = qIsQuestion ? questionOnlyQuestions.findIndex(q => q.id === question.id) : -1;
 
     return (
-      <div key={question.id} className="h-screen w-full flex flex-col items-center justify-center p-4 snap-center">
+      <div key={question.id} id={`step-${index}`} className="h-screen w-full flex flex-col items-center justify-center p-4 snap-center shrink-0">
         <div className="relative w-full max-w-md mx-auto">
           <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full flex flex-col justify-center min-h-[300px] sm:min-h-[350px]">
             <CardHeader className="text-center px-4 pt-6 sm:px-6">
@@ -347,7 +361,7 @@ export function SurveyForm() {
   };
   
   const renderSummary = () => (
-    <div id="summary-card" className="h-screen w-full flex flex-col items-center justify-center p-4 snap-center">
+    <div id="summary-card" className="h-screen w-full flex flex-col items-center justify-center p-4 snap-center shrink-0">
       {isSubmitting ? (
           <div className="text-center flex flex-col items-center justify-center min-h-[300px]">
             <Loader className="mx-auto h-16 w-16 animate-spin text-primary" />
@@ -410,7 +424,7 @@ export function SurveyForm() {
       
       <FormProvider {...methods}>
         <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
-          <div ref={setScrollContainer} className="h-full w-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth pl-8">
+          <div ref={scrollContainerRef} className="h-full w-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth">
             {renderIntro()}
             {questions.map((q, i) => renderQuestion(q, i))}
             {renderSummary()}
