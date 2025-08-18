@@ -223,39 +223,41 @@ export function SurveyForm() {
         </motion.div>
         
         <motion.div 
-            className="grid grid-cols-2 gap-2 mt-6 w-full"
+            className="mt-6 w-full"
             initial="hidden"
             animate="visible"
             variants={{
                 visible: { transition: { staggerChildren: 0.2 } }
             }}
         >
-          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-lg shadow-primary/10 w-full">
-                  <CardHeader className="items-center p-3">
-                      <FileText className="w-6 h-6 text-primary"/>
-                      <CardTitle className="text-sm mt-2">Questions</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-3 pt-0">
-                      <p className="text-xl font-bold">{totalQuestions}</p>
-                      <p className="text-muted-foreground text-xs">in-depth</p>
-                  </CardContent>
-              </Card>
-          </motion.div>
-          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-lg shadow-primary/10 w-full">
-                  <CardHeader className="items-center p-3">
-                      <Clock className="w-6 h-6 text-primary"/>
-                      <CardTitle className="text-sm mt-2">Duration</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-3 pt-0">
-                      <p className="text-xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
-                      <p className="text-muted-foreground text-xs">minutes</p>
-                  </CardContent>
-              </Card>
-          </motion.div>
-          <motion.div className="col-span-2 mt-2" variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-lg shadow-primary/10">
+          <div className="grid grid-cols-2 gap-2">
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
+                <Card className="bg-card/50 backdrop-blur-sm border-primary/20 shadow-lg shadow-primary/10 w-full">
+                    <CardHeader className="items-center p-3">
+                        <FileText className="w-6 h-6 text-primary"/>
+                        <CardTitle className="text-sm mt-2">Questions</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3 pt-0">
+                        <p className="text-xl font-bold">{totalQuestions}</p>
+                        <p className="text-muted-foreground text-xs">in-depth</p>
+                    </CardContent>
+                </Card>
+            </motion.div>
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
+                <Card className="bg-card/50 backdrop-blur-sm border-primary/20 shadow-lg shadow-primary/10 w-full">
+                    <CardHeader className="items-center p-3">
+                        <Clock className="w-6 h-6 text-primary"/>
+                        <CardTitle className="text-sm mt-2">Duration</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3 pt-0">
+                        <p className="text-xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
+                        <p className="text-muted-foreground text-xs">minutes</p>
+                    </CardContent>
+                </Card>
+            </motion.div>
+          </div>
+          <motion.div className="mt-2" variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+              <Card className="bg-card/50 backdrop-blur-sm border-primary/20 shadow-lg shadow-primary/10">
                   <CardHeader className="items-center p-3">
                       <BarChart className="w-6 h-6 text-primary"/>
                       <CardTitle className="text-sm mt-2">Reward</CardTitle>
@@ -355,7 +357,7 @@ export function SurveyForm() {
 
   return (
     <main className="relative h-screen w-full bg-background overflow-hidden">
-      <div className="absolute inset-0 -z-10">
+      <div className="absolute inset-0 -z-20">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent"></div>
         <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse"></div>
         <div className="absolute bottom-[-30%] right-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse animation-delay-4000"></div>
@@ -363,19 +365,21 @@ export function SurveyForm() {
       
       {!isIntro && !summary && !isSubmitting && (
         <div className="fixed left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center">
-            <div className="relative h-64 w-8 flex justify-center items-center bg-primary/20 rounded-full overflow-hidden">
+            <div className="relative h-64 w-2 flex justify-center items-center bg-primary/20 rounded-full overflow-hidden">
                 <div className="absolute bottom-0 w-full bg-primary transition-all duration-300" style={{height: `${progress}%`}}></div>
-                <span className="z-10 text-primary-foreground font-bold text-xs mix-blend-difference">{Math.round(progress)}%</span>
+                <span className="z-10 text-primary-foreground font-bold text-[10px] mix-blend-difference" style={{writingMode: 'vertical-rl', transform: 'rotate(180deg)'}}>{Math.round(progress)}%</span>
             </div>
         </div>
       )}
       
       <FormProvider {...methods}>
-        <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full pl-20">
+        <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full pl-12">
           <div ref={setScrollContainer} className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
             {renderIntro()}
             {questions.map((q, i) => (
-              <React.Fragment key={q.id}>{renderQuestion(q, i)}</React.Fragment>
+              <React.Fragment key={q.id}>
+                {renderQuestion(q, i)}
+              </React.Fragment>
             ))}
             {renderSummary()}
           </div>
