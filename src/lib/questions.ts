@@ -1,3 +1,4 @@
+
 export type Option = {
   label: string;
   value: string;
@@ -12,11 +13,6 @@ export type Question = {
 };
 
 export const questions: Question[] = [
-  {
-    id: 'intro',
-    type: 'header',
-    text: "Alright let's get to know you a bit",
-  },
   {
     id: 'name',
     type: 'text',

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
@@ -92,8 +93,9 @@ export function SurveyForm() {
   const handleNext = async () => {
     if (isIntro) {
       setIsIntro(false);
-      setCurrentStep(0);
-      scrollToView(0);
+      const nextStep = 0;
+      setCurrentStep(nextStep);
+      scrollToView(nextStep);
       return;
     }
   
@@ -412,7 +414,7 @@ export function SurveyForm() {
       
       <FormProvider {...methods}>
         <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
-          <div ref={scrollContainerRef} className="h-full w-full overflow-y-hidden snap-y snap-mandatory">
+          <div ref={scrollContainerRef} className="h-full w-full overflow-hidden snap-y snap-mandatory">
             {renderIntro()}
             {questions.map((q, i) => renderQuestion(q, i))}
             {renderSummary()}
