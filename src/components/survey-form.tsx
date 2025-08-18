@@ -209,7 +209,7 @@ export function SurveyForm() {
 
   const variants = {
     enter: (direction: number) => ({
-      y: direction > 0 ? '100%' : '-100%',
+      y: direction > 0 ? '100vh' : '-100vh',
       opacity: 0,
     }),
     center: {
@@ -219,7 +219,7 @@ export function SurveyForm() {
     },
     exit: (direction: number) => ({
       zIndex: 0,
-      y: direction < 0 ? '100%' : '-100%',
+      y: direction < 0 ? '100vh' : '-100vh',
       opacity: 0,
     }),
   };
@@ -347,34 +347,32 @@ export function SurveyForm() {
               animate="center"
               exit="exit"
               transition={{
-                y: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 }
+                y: { type: 'spring', stiffness: 200, damping: 25 },
+                opacity: { duration: 0.3 }
               }}
-              className="w-full"
+              className="w-full h-full flex flex-col justify-center items-center"
             >
-              <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto">
+              <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full">
                 <CardHeader className="text-center px-4 sm:px-6">
                   {isQuestion && (
                     <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {currentQuestionIndex + 1}</p>
                   )}
                   <CardTitle className="text-base sm:text-lg md:text-xl font-headline font-bold">{mainText}</CardTitle>
                 </CardHeader>
-                {exampleText && (
-                  <CardContent className="p-4 pt-0">
-                    <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl">
-                        <CardContent className="p-4">
-                            <CardDescription className="text-center text-xs sm:text-sm text-muted-foreground">{exampleText}</CardDescription>
-                        </CardContent>
-                    </Card>
-                  </CardContent>
-                )}
                 <CardContent className="my-4 flex items-center justify-center px-4 sm:px-6">
                   {isQuestion ? renderInput(currentQuestion) : <div />}
                 </CardContent>
               </Card>
+              {exampleText && (
+                  <Card className="mt-4 bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full">
+                      <CardContent className="p-4">
+                          <CardDescription className="text-center text-xs sm:text-sm text-muted-foreground">{exampleText}</CardDescription>
+                      </CardContent>
+                  </Card>
+                )}
             </motion.div>
           </AnimatePresence>
-          <div className="flex justify-between items-center mt-6">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 flex justify-between items-center mt-6">
             <Button type="button" variant="ghost" onClick={handlePrev} disabled={step === 0}>
               <ArrowUp className="mr-2 h-4 w-4" /> Back
             </Button>
@@ -390,7 +388,7 @@ export function SurveyForm() {
   };
   
   return (
-    <main className="relative flex flex-col items-center min-h-screen w-full bg-background p-4 overflow-hidden">
+    <main className="relative flex flex-col items-center h-screen w-full bg-background p-4 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent"></div>
           <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse"></div>
@@ -402,12 +400,11 @@ export function SurveyForm() {
       </div>
 
       {!summary && !isSubmitting && !isIntro && (
-        <div className="w-full max-w-md fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 px-4 z-20">
-            <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                <span>Progress</span>
-                <span>{Math.round(progress)}%</span>
+        <div className="fixed right-4 top-1/2 -translate-y-1/2 h-64 w-4 z-20 flex flex-col items-center">
+          <Progress orientation="vertical" value={progress} className="w-2 h-full progress-bar-shine" />
+            <div className="text-xs text-muted-foreground mt-2">
+                {Math.round(progress)}%
             </div>
-          <Progress value={progress} className="h-2 progress-bar-shine" />
         </div>
       )}
     </main>

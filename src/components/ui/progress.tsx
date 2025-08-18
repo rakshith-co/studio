@@ -7,19 +7,32 @@ import { cn } from "@/lib/utils"
 
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
->(({ className, value, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
+    orientation?: "horizontal" | "vertical"
+  }
+>(({ className, value, orientation = "horizontal", ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
+    orientation={orientation}
     className={cn(
-      "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
+      "relative overflow-hidden rounded-full bg-secondary",
+      orientation === "horizontal" && "h-4 w-full",
+      orientation === "vertical" && "h-full w-4 flex-col",
       className
     )}
     {...props}
   >
     <ProgressPrimitive.Indicator
-      className="h-full w-full flex-1 bg-primary transition-all"
-      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+      className={cn(
+        "flex-1 bg-primary transition-all",
+        orientation === "horizontal" && "h-full w-full",
+        orientation === "vertical" && "h-full w-full"
+        )}
+      style={{ 
+        transform: orientation === 'horizontal' 
+          ? `translateX(-${100 - (value || 0)}%)` 
+          : `translateY(${100 - (value || 0)}%)`
+      }}
     />
   </ProgressPrimitive.Root>
 ))
