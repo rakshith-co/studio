@@ -1,3 +1,7 @@
+import { SurveyForm } from '@/components/survey-form';
+
 export default function Home() {
-  return <></>;
+  return (
+    <SurveyForm />
+  );
 }
