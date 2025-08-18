@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, BarChart, CheckCircle, Clock, FileText, Loader, Share2, Sparkles, Twitter } from 'lucide-react';
+import { ArrowDown, ArrowUp, BarChart, CheckCircle, Clock, FileText, Loader, Share2, Sparkles, Twitter } from 'lucide-react';
 
 import { questions, questionOnlyQuestions, likertOptions, type Question } from '@/lib/questions';
 import { surveySchema, type SurveySchema } from '@/lib/schema';
@@ -209,17 +209,17 @@ export function SurveyForm() {
 
   const variants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? '100%' : '-100%',
+      y: direction > 0 ? '100%' : '-100%',
       opacity: 0,
     }),
     center: {
       zIndex: 1,
-      x: 0,
+      y: 0,
       opacity: 1,
     },
     exit: (direction: number) => ({
       zIndex: 0,
-      x: direction < 0 ? '100%' : '-100%',
+      y: direction < 0 ? '100%' : '-100%',
       opacity: 0,
     }),
   };
@@ -242,7 +242,7 @@ export function SurveyForm() {
               }}
           >
               <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
-                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
+                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-auto shadow-[0_0_20px_rgba(224,36,36,0.2)]">
                       <CardHeader className="items-center p-4 sm:p-6">
                           <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
                           <CardTitle className="text-base sm:text-xl mt-2">Questions</CardTitle>
@@ -254,7 +254,7 @@ export function SurveyForm() {
                   </Card>
               </motion.div>
               <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
-                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
+                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-auto shadow-[0_0_20px_rgba(224,36,36,0.2)]">
                       <CardHeader className="items-center p-4 sm:p-6">
                           <Clock className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
                           <CardTitle className="text-base sm:text-xl mt-2">Duration</CardTitle>
@@ -281,7 +281,7 @@ export function SurveyForm() {
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.5 }} className="mt-auto pb-4">
               <Button size="lg" className="mt-8 text-base sm:text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={() => setIsIntro(false)}>
-                  Start Your Analysis <ArrowRight className="ml-2" />
+                  Start Your Analysis <ArrowDown className="ml-2" />
               </Button>
           </motion.div>
       </div>
@@ -347,42 +347,40 @@ export function SurveyForm() {
               animate="center"
               exit="exit"
               transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
+                y: { type: "spring", stiffness: 300, damping: 30 },
                 opacity: { duration: 0.2 }
               }}
               className="w-full"
             >
-              <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl">
+              <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto">
                 <CardHeader className="text-center px-4 sm:px-6">
                   {isQuestion && (
                     <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {currentQuestionIndex + 1}</p>
                   )}
                   <CardTitle className="text-base sm:text-lg md:text-xl font-headline font-bold">{mainText}</CardTitle>
                 </CardHeader>
-
-                <CardContent className="my-4 flex items-center justify-center px-4 sm:px-6">
-                  {isQuestion ? renderInput(currentQuestion) : <div />}
-                </CardContent>
-              </Card>
-
-              {exampleText && (
-                 <motion.div initial={{opacity: 0}} animate={{opacity: 1}} transition={{delay: 0.2}} className="mt-4">
+                {exampleText && (
+                  <CardContent className="p-4 pt-0">
                     <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl">
                         <CardContent className="p-4">
                             <CardDescription className="text-center text-xs sm:text-sm text-muted-foreground">{exampleText}</CardDescription>
                         </CardContent>
                     </Card>
-                 </motion.div>
-              )}
+                  </CardContent>
+                )}
+                <CardContent className="my-4 flex items-center justify-center px-4 sm:px-6">
+                  {isQuestion ? renderInput(currentQuestion) : <div />}
+                </CardContent>
+              </Card>
             </motion.div>
           </AnimatePresence>
           <div className="flex justify-between items-center mt-6">
             <Button type="button" variant="ghost" onClick={handlePrev} disabled={step === 0}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+              <ArrowUp className="mr-2 h-4 w-4" /> Back
             </Button>
             {currentQuestion.type === 'header' || currentQuestion.type !== 'likert' ? (
               <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(224,36,36,0.6)]">
-                {step === questions.length - 1 ? 'Finish & See Results' : 'Next'} <ArrowRight className="ml-2 h-4 w-4" />
+                {step === questions.length - 1 ? 'Finish & See Results' : 'Next'} <ArrowDown className="ml-2 h-4 w-4" />
               </Button>
             ) : null}
           </div>
