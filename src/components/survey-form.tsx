@@ -360,7 +360,10 @@ export function SurveyForm() {
                   <CardTitle className="text-base sm:text-lg md:text-xl font-headline font-bold">{mainText}</CardTitle>
                 </CardHeader>
 
-                <CardContent className="my-4 min-h-[200px] sm:min-h-[220px] flex items-center justify-center px-4 sm:px-6">
+                <CardContent className={cn(
+                  "my-4 flex items-center justify-center px-4 sm:px-6",
+                  isQuestion ? "min-h-[200px] sm:min-h-[220px]" : "min-h-0"
+                )}>
                   {isQuestion ? renderInput(currentQuestion) : <div />}
                 </CardContent>
               </Card>
