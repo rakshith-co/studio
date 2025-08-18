@@ -31,8 +31,8 @@ const Progress = React.forwardRef<
       style={{ 
         transform: orientation === 'horizontal' 
           ? `translateX(-${100 - (value || 0)}%)` 
-          : `translateY(${100 - (value || 0)}%)`,
-        ...(orientation === 'vertical' && { height: `${value || 0}%`, transform: 'translateY(0)' })
+          : 'none',
+        height: orientation === 'vertical' ? `${value || 0}%` : '100%'
       }}
     />
   </ProgressPrimitive.Root>

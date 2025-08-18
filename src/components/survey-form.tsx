@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, BarChart, CheckCircle, Clock, FileText, Loader, Share2, Sparkles, Twitter } from 'lucide-react';
+import { ArrowUp, ArrowDown, BarChart, CheckCircle, Clock, FileText, Loader, Sparkles, Twitter } from 'lucide-react';
 
 import { questions, questionOnlyQuestions, likertOptions, type Question } from '@/lib/questions';
 import { surveySchema, type SurveySchema } from '@/lib/schema';
@@ -27,8 +27,9 @@ export function SurveyForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [direction, setDirection] = useState(1);
   const [isIntro, setIsIntro] = useState(true);
+  const [scrollContainer, setScrollContainer] = useState<HTMLDivElement | null>(null);
+  const lastScrollTime = useRef(0);
 
   const { toast } = useToast();
 
@@ -38,6 +39,14 @@ export function SurveyForm() {
   });
 
   const { formState: { errors }, watch, trigger, getValues } = methods;
+
+  const allQuestions = useMemo(() => {
+    return [
+      { id: 'intro-card', type: 'intro' as const }, 
+      ...questions, 
+      { id: 'summary-card', type: 'summary' as const }
+    ];
+  }, []);
 
   const currentQuestion = useMemo(() => questions[step], [step]);
   
@@ -59,7 +68,6 @@ export function SurveyForm() {
     }
     return { mainText: questionText, exampleText: null };
   }, [questionText]);
-
 
   const isQuestion = currentQuestion?.type !== 'header';
   const currentQuestionIndex = isQuestion ? questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id) : -1;
@@ -83,7 +91,21 @@ export function SurveyForm() {
     }
   }, [progress, summary]);
 
+  const scrollToStep = (newStep: number) => {
+    const element = document.getElementById(`step-${newStep}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setStep(newStep);
+    }
+  };
+
   const handleNext = async () => {
+    if (isIntro) {
+      setIsIntro(false);
+      scrollToStep(0);
+      return;
+    }
+
     let isValid = true;
     if (isQuestion && currentQuestion) {
       isValid = await trigger(currentQuestion.id as keyof SurveySchema);
@@ -97,9 +119,8 @@ export function SurveyForm() {
     }
     
     if (isValid) {
-      setDirection(1);
       if (step < questions.length - 1) {
-        setStep(step + 1);
+        scrollToStep(step + 1);
       } else {
         await methods.handleSubmit(onSubmit)();
       }
@@ -107,9 +128,8 @@ export function SurveyForm() {
   };
 
   const handlePrev = () => {
-    setDirection(-1);
     if (step > 0) {
-      setStep(step - 1);
+      scrollToStep(step - 1);
     }
   };
   
@@ -119,6 +139,10 @@ export function SurveyForm() {
     if (result.success) {
       setSummary(result.summary);
       setShowConfetti(true);
+      const summaryElement = document.getElementById('summary-card');
+      if (summaryElement) {
+        summaryElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     } else {
       toast({
         variant: 'destructive',
@@ -150,7 +174,7 @@ export function SurveyForm() {
           <RadioGroup
             onValueChange={(value) => methods.setValue(fieldName, value, { shouldValidate: true })}
             value={watchedValue as string}
-            className="gap-2 sm:gap-4"
+            className="gap-2 sm:gap-3"
           >
             {question.options?.map((option) => (
               <div key={option.value} className="flex items-center">
@@ -180,7 +204,7 @@ export function SurveyForm() {
         );
       case 'likert':
         return (
-          <div className="flex flex-col justify-center gap-2 md:gap-3 w-full">
+          <div className="flex flex-col justify-center gap-2 md:gap-3 w-full max-w-xs mx-auto">
             {likertOptions.map(option => (
               <Button
                 key={option.value}
@@ -207,208 +231,185 @@ export function SurveyForm() {
     }
   };
 
-  const variants = {
-    enter: (direction: number) => ({
-      y: direction > 0 ? 50 : -50,
-      opacity: 0,
-    }),
-    center: {
-      zIndex: 1,
-      y: 0,
-      opacity: 1,
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      y: direction < 0 ? 50 : -50,
-      opacity: 0,
-    }),
-  };
+  const renderIntro = () => (
+    <div id="intro-card" className="h-screen w-full flex flex-col justify-center items-center text-center p-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <Logo className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-primary mb-2" />
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline tracking-tighter">Q-Commerce Insights</h1>
+            <p className="text-muted-foreground text-sm sm:text-base mt-2 max-w-xs sm:max-w-md mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
+        </motion.div>
+        
+        <motion.div 
+            className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-4 mt-6 sm:mt-8 max-w-sm mx-auto"
+            initial="hidden"
+            animate="visible"
+            variants={{
+                visible: { transition: { staggerChildren: 0.2 } }
+            }}
+        >
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
+                <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-lg shadow-primary/10">
+                    <CardHeader className="items-center p-3 sm:p-4">
+                        <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-primary"/>
+                        <CardTitle className="text-sm sm:text-base mt-2">Questions</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3 sm:p-4 pt-0">
+                        <p className="text-xl sm:text-2xl font-bold">{totalQuestions}</p>
+                        <p className="text-muted-foreground text-xs">in-depth</p>
+                    </CardContent>
+                </Card>
+            </motion.div>
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
+                <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-lg shadow-primary/10">
+                    <CardHeader className="items-center p-3 sm:p-4">
+                        <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-primary"/>
+                        <CardTitle className="text-sm sm:text-base mt-2">Duration</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3 sm:p-4 pt-0">
+                        <p className="text-xl sm:text-2xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
+                        <p className="text-muted-foreground text-xs">minutes</p>
+                    </CardContent>
+                </Card>
+            </motion.div>
+            <motion.div className="col-span-2 mt-2" variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-lg shadow-primary/10">
+                    <CardHeader className="items-center p-3 sm:p-4">
+                        <BarChart className="w-6 h-6 sm:w-8 sm:h-8 text-primary"/>
+                        <CardTitle className="text-sm sm:text-base mt-2">Reward</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3 sm:p-4 pt-0">
+                        <p className="text-base sm:text-lg font-bold">Summary</p>
+                        <p className="text-muted-foreground text-xs">of your behavior</p>
+                    </CardContent>
+                </Card>
+            </motion.div>
+        </motion.div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.5 }} className="mt-6">
+            <Button size="lg" className="text-base sm:text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={handleNext}>
+                Start Analysis <ArrowDown className="ml-2" />
+            </Button>
+        </motion.div>
+    </div>
+  );
+  
+  const renderQuestion = (question: Question, index: number) => {
+    const isHeader = question.type === 'header';
+    const currentQText = isHeader && question.id === 'darkPatternsHeader' ? `Great ${getValues('name') || 'you'}, let's identify if you experience dark patterns in quick com app` : question.text;
+    const { mainText: qMainText, exampleText: qExampleText } = (isHeader ? { mainText: currentQText, exampleText: null } : (() => {
+      const match = question.text.match(/(.*)\((Example:.*)\)/s);
+      return match ? { mainText: match[1].trim(), exampleText: match[2].trim() } : { mainText: question.text, exampleText: null };
+    })());
+    const qIsQuestion = question.type !== 'header';
+    const qIndex = qIsQuestion ? questionOnlyQuestions.findIndex(q => q.id === question.id) : -1;
 
-  if (isIntro) {
     return (
-      <div className="w-full max-w-lg mx-auto text-center flex flex-col justify-start pt-8 sm:pt-16 flex-grow">
-           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <Logo className="mx-auto h-12 w-12 sm:h-20 sm:w-20 text-primary mb-2" />
-              <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold font-headline tracking-tighter">Q-Commerce Insights</h1>
-              <p className="text-muted-foreground text-sm sm:text-lg mt-2 sm:mt-4 max-w-xs sm:max-w-2xl mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
-          </motion.div>
-          
-          <motion.div 
-              className="grid grid-cols-2 gap-4 mt-8 sm:mt-12 max-w-md mx-auto"
-              initial="hidden"
-              animate="visible"
-              variants={{
-                  visible: { transition: { staggerChildren: 0.2 } }
-              }}
-          >
-              <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
-                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
-                      <CardHeader className="items-center p-4 sm:p-6">
-                          <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
-                          <CardTitle className="text-base sm:text-xl mt-2">Questions</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4 sm:p-6 pt-0">
-                          <p className="text-2xl sm:text-4xl font-bold">{totalQuestions}</p>
-                          <p className="text-muted-foreground text-xs sm:text-base">in-depth</p>
-                      </CardContent>
-                  </Card>
-              </motion.div>
-              <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
-                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
-                      <CardHeader className="items-center p-4 sm:p-6">
-                          <Clock className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
-                          <CardTitle className="text-base sm:text-xl mt-2">Duration</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4 sm:p-6 pt-0">
-                          <p className="text-2xl sm:text-4xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
-                          <p className="text-muted-foreground text-xs sm:text-base">minutes</p>
-                      </CardContent>
-                  </Card>
-              </motion.div>
-              <motion.div className="col-span-2 mt-4" variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
-                      <CardHeader className="items-center p-4 sm:p-6">
-                          <BarChart className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
-                          <CardTitle className="text-base sm:text-xl mt-2">Reward</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4 sm:p-6 pt-0">
-                          <p className="text-base sm:text-lg font-bold">Summary</p>
-                          <p className="text-muted-foreground text-xs sm:text-base">of your behavior</p>
-                      </CardContent>
-                  </Card>
-              </motion.div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.5 }} className="mt-auto pb-4">
-              <Button size="lg" className="mt-8 text-base sm:text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={() => setIsIntro(false)}>
-                  Start Your Analysis <ArrowRight className="ml-2" />
-              </Button>
-          </motion.div>
-      </div>
-    )
-  }
-
-  const renderContent = () => {
-    if (!currentQuestion) return null;
-
-    if (isSubmitting) {
-      return (
-        <div className="text-center flex flex-col items-center justify-center min-h-[300px]">
-          <Loader className="mx-auto h-16 w-16 animate-spin text-primary" />
-          <h2 className="mt-6 text-3xl font-bold tracking-tight">Analyzing Your Responses...</h2>
-          <p className="text-muted-foreground text-lg">Our AI is crafting your personalized insights.</p>
-        </div>
-      );
-    }
-    if (summary) {
-      return (
-        <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
-           {showConfetti && <Confetti />}
-          <Card className="bg-card/50 border-primary/50 backdrop-blur-lg max-w-2xl mx-auto text-center shadow-2xl shadow-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-center gap-3 text-3xl sm:text-4xl font-bold text-primary tracking-tighter">
-                <Sparkles className="w-8 h-8"/> Your Insights Report
-              </CardTitle>
-              <CardDescription>Based on your survey responses.</CardDescription>
+      <div id={`step-${index}`} className="h-screen w-full flex flex-col items-center justify-center p-4 snap-center">
+        <div className="relative w-full max-w-md mx-auto">
+          <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full flex flex-col justify-center min-h-[300px] sm:min-h-[350px]">
+            <CardHeader className="text-center px-4 pt-6 sm:px-6">
+              {qIsQuestion && (
+                <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {qIndex + 1}</p>
+              )}
+              <CardTitle className="text-lg sm:text-xl font-headline font-bold">{qMainText}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-base sm:text-lg whitespace-pre-wrap font-medium p-4 bg-black/20 rounded-lg">{summary}</p>
-              <p className="mt-6 font-bold text-lg sm:text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
-              <div className="mt-6 flex flex-col sm:flex-row justify-center gap-4">
-                <Button onClick={() => window.location.reload()}>Start Over</Button>
-                <Button
-                  variant="outline"
-                  className="bg-transparent border-2 border-sky-500 text-sky-400 hover:bg-sky-500 hover:text-white"
-                  onClick={() => {
-                    const text = `I just uncovered my online shopping habits with Q-Commerce Insights! Get your own analysis. #QCommerceInsights`;
-                    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-                    window.open(url, '_blank');
-                  }}
-                >
-                  <Twitter className="mr-2 h-4 w-4" />
-                  Share on X
-                </Button>
-              </div>
+            <CardContent className="my-4 flex flex-grow items-center justify-center px-4 sm:px-6">
+              {qIsQuestion ? renderInput(question) : <div />}
             </CardContent>
           </Card>
-        </motion.div>
-      );
-    }
-    
-    return (
-      <FormProvider {...methods}>
-        <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="w-full max-w-md mx-auto">
-          <AnimatePresence initial={false} custom={direction} mode="wait">
-            <motion.div
-              key={step}
-              custom={direction}
-              variants={variants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                y: { type: 'spring', stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 }
-              }}
-              className="w-full h-full flex flex-col justify-center items-center"
-            >
-              <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full min-h-[300px] sm:min-h-[400px] flex flex-col justify-center">
-                <CardHeader className="text-center px-4 sm:px-6">
-                  {isQuestion && (
-                    <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {currentQuestionIndex + 1}</p>
-                  )}
-                  <CardTitle className="text-lg sm:text-xl md:text-2xl font-headline font-bold">{mainText}</CardTitle>
-                </CardHeader>
-                <CardContent className="my-4 flex items-center justify-center px-4 sm:px-6">
-                  {isQuestion ? renderInput(currentQuestion) : <div />}
-                </CardContent>
+           {qExampleText && (
+              <Card className="mt-4 bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full">
+                  <CardContent className="p-4">
+                      <CardDescription className="text-center text-xs sm:text-sm text-muted-foreground">{qExampleText}</CardDescription>
+                  </CardContent>
               </Card>
-              {exampleText && (
-                  <Card className="mt-4 bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full">
-                      <CardContent className="p-4">
-                          <CardDescription className="text-center text-xs sm:text-sm text-muted-foreground">{exampleText}</CardDescription>
-                      </CardContent>
-                  </Card>
-                )}
-            </motion.div>
-          </AnimatePresence>
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 flex justify-between items-center mt-6">
-            <Button type="button" variant="ghost" onClick={handlePrev} disabled={step === 0}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
-            </Button>
-            {currentQuestion.type === 'header' || currentQuestion.type !== 'likert' ? (
-              <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(224,36,36,0.6)]">
-                {step === questions.length - 1 ? 'Finish & See Results' : 'Next'} <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            ) : null}
-          </div>
-        </form>
-      </FormProvider>
+            )}
+        </div>
+      </div>
     );
   };
   
+  const renderSummary = () => (
+    <div id="summary-card" className="h-screen w-full flex flex-col items-center justify-center p-4 snap-center">
+      {isSubmitting ? (
+          <div className="text-center flex flex-col items-center justify-center min-h-[300px]">
+            <Loader className="mx-auto h-16 w-16 animate-spin text-primary" />
+            <h2 className="mt-6 text-3xl font-bold tracking-tight">Analyzing Your Responses...</h2>
+            <p className="text-muted-foreground text-lg">Our AI is crafting your personalized insights.</p>
+          </div>
+        ) : (
+          summary && (
+            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="w-full">
+              {showConfetti && <Confetti />}
+              <Card className="bg-card/50 border-primary/50 backdrop-blur-lg max-w-2xl mx-auto text-center shadow-2xl shadow-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-center gap-3 text-3xl sm:text-4xl font-bold text-primary tracking-tighter">
+                    <Sparkles className="w-8 h-8"/> Your Insights Report
+                  </CardTitle>
+                  <CardDescription>Based on your survey responses.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-base sm:text-lg whitespace-pre-wrap font-medium p-4 bg-black/20 rounded-lg">{summary}</p>
+                  <p className="mt-6 font-bold text-lg sm:text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
+                  <div className="mt-6 flex flex-col sm:flex-row justify-center gap-4">
+                    <Button onClick={() => window.location.reload()}>Start Over</Button>
+                    <Button
+                      variant="outline"
+                      className="bg-transparent border-2 border-sky-500 text-sky-400 hover:bg-sky-500 hover:text-white"
+                      onClick={() => {
+                        const text = `I just uncovered my online shopping habits with Q-Commerce Insights! Get your own analysis. #QCommerceInsights`;
+                        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+                        window.open(url, '_blank');
+                      }}
+                    >
+                      <Twitter className="mr-2 h-4 w-4" />
+                      Share on X
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )
+        )}
+    </div>
+  );
+
   return (
-    <main className="relative flex flex-col items-center h-screen w-full bg-background p-4 overflow-hidden">
+    <main className="relative h-screen w-full bg-background overflow-hidden">
       <div className="absolute inset-0 z-0">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent"></div>
         <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse"></div>
         <div className="absolute bottom-[-30%] right-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse animation-delay-4000"></div>
       </div>
-
-      {!summary && !isSubmitting && !isIntro && (
-        <div className="fixed left-4 top-1/2 -translate-y-1/2 h-64 z-20 flex flex-col items-center">
+      
+      {!isIntro && !summary && !isSubmitting && (
+        <div className="fixed left-4 top-1/2 -translate-y-1/2 h-64 z-0 flex flex-col items-center">
             <div className="relative h-full w-4 flex justify-center">
-                <Progress orientation="vertical" value={progress} className="w-2 h-full progress-bar-shine" />
-                <div className="absolute bottom-0 transform translate-y-full pt-2 text-xs text-primary font-bold">
-                    {Math.round(progress)}%
-                </div>
+                <Progress orientation="vertical" value={progress} className="w-2 h-full" />
             </div>
+             <p className="text-primary font-bold mt-2 text-xs">{Math.round(progress)}%</p>
         </div>
       )}
+      
+      <FormProvider {...methods}>
+        <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
+          <div ref={setScrollContainer} className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
+            {renderIntro()}
+            {questions.map((q, i) => renderQuestion(q, i))}
+            {renderSummary()}
+          </div>
+        </form>
+      </FormProvider>
 
-      <div className="z-10 w-full flex-grow flex flex-col items-center justify-center">
-        {renderContent()}
-      </div>
+      {!isIntro && !summary && !isSubmitting && (
+        <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2">
+            <Button type="button" variant="ghost" onClick={handlePrev} disabled={step === 0}>
+              <ArrowUp className="h-5 w-5" />
+            </Button>
+            <Button type="button" variant="ghost" onClick={handleNext} disabled={currentQuestion?.type === 'likert'}>
+               <ArrowDown className="h-5 w-5" />
+            </Button>
+        </div>
+      )}
     </main>
   );
 }
