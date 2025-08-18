@@ -215,15 +215,15 @@ export function SurveyForm() {
 
   const renderIntro = () => (
     <div id="intro-card" className="h-screen w-full flex flex-col justify-center items-center text-center p-4">
-      <div className="flex flex-col justify-center items-center h-full">
+      <div className="flex flex-col justify-center items-center h-full max-w-sm mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <Logo className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-primary mb-2" />
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline tracking-tighter">Q-Commerce Insights</h1>
-            <p className="text-muted-foreground text-sm sm:text-base mt-2 max-w-xs sm:max-w-md mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
+            <Logo className="mx-auto h-12 w-12 text-primary mb-2" />
+            <h1 className="text-3xl sm:text-4xl font-bold font-headline tracking-tighter">Q-Commerce Insights</h1>
+            <p className="text-muted-foreground text-sm mt-2 max-w-xs mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
         </motion.div>
         
         <motion.div 
-            className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-4 mt-6 sm:mt-8 max-w-sm mx-auto"
+            className="grid grid-cols-2 gap-2 mt-6 w-full"
             initial="hidden"
             animate="visible"
             variants={{
@@ -231,44 +231,44 @@ export function SurveyForm() {
             }}
         >
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-lg shadow-primary/10 w-36">
-                  <CardHeader className="items-center p-3 sm:p-4">
-                      <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-primary"/>
-                      <CardTitle className="text-sm sm:text-base mt-2">Questions</CardTitle>
+              <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-lg shadow-primary/10 w-full">
+                  <CardHeader className="items-center p-3">
+                      <FileText className="w-6 h-6 text-primary"/>
+                      <CardTitle className="text-sm mt-2">Questions</CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 sm:p-4 pt-0">
-                      <p className="text-xl sm:text-2xl font-bold">{totalQuestions}</p>
+                  <CardContent className="p-3 pt-0">
+                      <p className="text-xl font-bold">{totalQuestions}</p>
                       <p className="text-muted-foreground text-xs">in-depth</p>
                   </CardContent>
               </Card>
           </motion.div>
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-lg shadow-primary/10 w-36">
-                  <CardHeader className="items-center p-3 sm:p-4">
-                      <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-primary"/>
-                      <CardTitle className="text-sm sm:text-base mt-2">Duration</CardTitle>
+              <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-lg shadow-primary/10 w-full">
+                  <CardHeader className="items-center p-3">
+                      <Clock className="w-6 h-6 text-primary"/>
+                      <CardTitle className="text-sm mt-2">Duration</CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 sm:p-4 pt-0">
-                      <p className="text-xl sm:text-2xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
+                  <CardContent className="p-3 pt-0">
+                      <p className="text-xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
                       <p className="text-muted-foreground text-xs">minutes</p>
                   </CardContent>
               </Card>
           </motion.div>
           <motion.div className="col-span-2 mt-2" variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
               <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-lg shadow-primary/10">
-                  <CardHeader className="items-center p-3 sm:p-4">
-                      <BarChart className="w-6 h-6 sm:w-8 sm:h-8 text-primary"/>
-                      <CardTitle className="text-sm sm:text-base mt-2">Reward</CardTitle>
+                  <CardHeader className="items-center p-3">
+                      <BarChart className="w-6 h-6 text-primary"/>
+                      <CardTitle className="text-sm mt-2">Reward</CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 sm:p-4 pt-0">
-                      <p className="text-base sm:text-lg font-bold">Summary</p>
+                  <CardContent className="p-3 pt-0">
+                      <p className="text-base font-bold">Summary</p>
                       <p className="text-muted-foreground text-xs">of your behavior</p>
                   </CardContent>
               </Card>
           </motion.div>
         </motion.div>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.5 }} className="mt-6">
-            <Button size="lg" className="text-base sm:text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={handleNext}>
+            <Button size="lg" className="text-base font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={handleNext}>
                 Start Analysis <ArrowDown className="ml-2" />
             </Button>
         </motion.div>
@@ -371,7 +371,7 @@ export function SurveyForm() {
       )}
       
       <FormProvider {...methods}>
-        <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
+        <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full pl-20">
           <div ref={setScrollContainer} className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
             {renderIntro()}
             {questions.map((q, i) => (
@@ -395,5 +395,3 @@ export function SurveyForm() {
     </main>
   );
 }
-
-    
