@@ -80,13 +80,11 @@ export function SurveyForm() {
       if(currentQuestion.type !== 'header') {
         questionIndex = questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id);
       } else {
-        // Find the next non-header question and use its index - 1
         const nextQuestionIndex = questions.findIndex((q, i) => i > currentStep && q.type !== 'header');
         if (nextQuestionIndex !== -1) {
           const nextQ = questions[nextQuestionIndex];
           questionIndex = questionOnlyQuestions.findIndex(q => q.id === nextQ.id) -1;
         } else {
-          // It's the last header, so we are at the end
           questionIndex = questionOnlyQuestions.length -1;
         }
       }
@@ -362,7 +360,7 @@ export function SurveyForm() {
     return (
       <div key={question.id} id={`step-${index}`} className="h-full w-full flex flex-col items-center justify-center p-4">
         <div className="relative w-full max-w-md mx-auto">
-          <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto min-h-[200px] w-full flex flex-col justify-center">
+          <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto min-h-[250px] w-full flex flex-col justify-center">
             <CardHeader className="text-center px-4 pt-6 sm:px-6">
               {qIsQuestion && (
                 <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {qIndex + 1}</p>
@@ -373,17 +371,17 @@ export function SurveyForm() {
               {qIsQuestion ? renderInput(question) : (
                 isHeader && (
                   <Button
-                    variant="ghost"
+                    variant="default"
                     size="icon"
                     onClick={handleNext}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full h-12 w-12"
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full h-12 w-12 bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]"
                   >
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5, duration: 0.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
                     >
-                      <ArrowDown className="w-8 h-8 text-primary/70" />
+                      <ArrowDown className="w-8 h-8 text-primary-foreground" />
                     </motion.div>
                   </Button>
                 )
@@ -467,7 +465,7 @@ export function SurveyForm() {
             <div ref={mainContainerRef} className="h-full w-full overflow-hidden">
                <AnimatePresence mode="wait">
                   <motion.div
-                      key={isIntro ? 'intro' : currentStep}
+                      key={isIntro ? 'intro' : summary ? 'summary' : currentStep}
                       initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -50 }}
