@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, ArrowUp, ArrowDown, BarChart, CheckCircle, Clock, FileText, Loader, Sparkles, Twitter } from 'lucide-react';
+import React from 'react';
 
 import { questions, questionOnlyQuestions, likertOptions, type Question } from '@/lib/questions';
 import { surveySchema, type SurveySchema } from '@/lib/schema';
@@ -18,12 +19,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Confetti } from './confetti';
 import { Logo } from './icons';
 import { cn } from '@/lib/utils';
-import React from 'react';
 
 const formId = 'q-commerce-survey-form';
 
 export function SurveyForm() {
-  const [step, setStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -39,7 +39,7 @@ export function SurveyForm() {
 
   const { formState: { errors }, watch, trigger, getValues } = methods;
 
-  const currentQuestion = useMemo(() => questions[step], [step]);
+  const currentQuestion = useMemo(() => questions[currentStep], [currentStep]);
   
   const questionText = useMemo(() => {
     if (!currentQuestion) return '';
@@ -61,7 +61,7 @@ export function SurveyForm() {
     if (currentQuestionIndex === -1) {
        // For headers, find the last actual question and calculate progress from there.
        let lastQuestionIndex = -1;
-       for (let i = step -1; i >=0; i--) {
+       for (let i = currentStep -1; i >=0; i--) {
            const prevQ = questions[i];
            if (prevQ.type !== 'header') {
                lastQuestionIndex = questionOnlyQuestions.findIndex(q => q.id === prevQ.id);
@@ -71,7 +71,7 @@ export function SurveyForm() {
        return ((lastQuestionIndex + 1) / totalQuestions) * 100;
     }
     return ((currentQuestionIndex) / totalQuestions) * 100;
-  }, [currentQuestionIndex, totalQuestions, step, summary, isSubmitting, isIntro]);
+  }, [currentQuestionIndex, totalQuestions, currentStep, summary, isSubmitting, isIntro]);
 
 
   useEffect(() => {
@@ -82,41 +82,22 @@ export function SurveyForm() {
     }
   }, [progress, summary]);
 
-  const scrollToStep = (newStepIndex: number) => {
-    if (scrollContainerRef.current) {
-        const stepHeight = scrollContainerRef.current.clientHeight;
-        let topPosition = 0;
-
-        if (newStepIndex === -1) { // Intro
-            setIsIntro(true);
-            topPosition = 0;
-        } else if (newStepIndex >= questions.length) { // Summary
-            setIsIntro(false);
-            topPosition = (questions.length + 1) * stepHeight;
-        } else { // Question
-            setIsIntro(false);
-            topPosition = (newStepIndex + 1) * stepHeight;
-        }
-
-        scrollContainerRef.current.scrollTo({
-            top: topPosition,
-            behavior: 'smooth'
-        });
-        
-        if (newStepIndex !== -1 && newStepIndex < questions.length) {
-            setStep(newStepIndex);
-        }
+  const scrollToView = useCallback((index: number) => {
+    const element = document.getElementById(`step-${index}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  };
+  }, []);
 
   const handleNext = async () => {
     if (isIntro) {
       setIsIntro(false);
-      scrollToStep(0);
+      setCurrentStep(0);
+      scrollToView(0);
       return;
     }
   
-    if (step >= questions.length) return;
+    if (currentStep >= questions.length) return;
 
     let isValid = true;
     if (isQuestion && currentQuestion) {
@@ -131,8 +112,10 @@ export function SurveyForm() {
     }
     
     if (isValid) {
-      if (step < questions.length - 1) {
-        scrollToStep(step + 1);
+      if (currentStep < questions.length - 1) {
+        const nextStep = currentStep + 1;
+        setCurrentStep(nextStep);
+        scrollToView(nextStep);
       } else {
         await methods.handleSubmit(onSubmit)();
       }
@@ -140,16 +123,19 @@ export function SurveyForm() {
   };
 
   const handlePrev = () => {
-    if (step > 0) {
-      scrollToStep(step - 1);
+    if (currentStep > 0) {
+      const prevStep = currentStep - 1;
+      setCurrentStep(prevStep);
+      scrollToView(prevStep);
     } else {
-      scrollToStep(-1);
+      setIsIntro(true);
+      scrollToView(-1); // For intro
     }
   };
   
   const onSubmit = async (data: SurveySchema) => {
     setIsSubmitting(true);
-    scrollToStep(questions.length); 
+    scrollToView(questions.length); // For summary
     const result = await submitSurvey(data);
     if (result.success) {
       setSummary(result.summary);
@@ -266,7 +252,7 @@ export function SurveyForm() {
   };
 
   const renderIntro = () => (
-    <div id="intro-card" className="h-screen w-full flex flex-col justify-center items-center text-center p-4 snap-center shrink-0">
+    <div id="step--1" className="h-screen w-full flex flex-col justify-center items-center text-center p-4 shrink-0">
       <div className="flex flex-col justify-center items-center h-full max-w-sm mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <Logo className="mx-auto h-12 w-12 text-primary mb-2" />
@@ -341,7 +327,7 @@ export function SurveyForm() {
     const qIndex = qIsQuestion ? questionOnlyQuestions.findIndex(q => q.id === question.id) : -1;
 
     return (
-      <div key={question.id} id={`step-${index}`} className="h-screen w-full flex flex-col items-center justify-center p-4 snap-center shrink-0">
+      <div key={question.id} id={`step-${index}`} className="h-screen w-full flex flex-col items-center justify-center p-4 shrink-0">
         <div className="relative w-full max-w-md mx-auto">
           <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full flex flex-col justify-center min-h-[300px] sm:min-h-[350px]">
             <CardHeader className="text-center px-4 pt-6 sm:px-6">
@@ -363,7 +349,7 @@ export function SurveyForm() {
   };
   
   const renderSummary = () => (
-    <div id="summary-card" className="h-screen w-full flex flex-col items-center justify-center p-4 snap-center shrink-0">
+    <div id="step-summary" className="h-screen w-full flex flex-col items-center justify-center p-4 shrink-0">
       {isSubmitting ? (
           <div className="text-center flex flex-col items-center justify-center min-h-[300px]">
             <Loader className="mx-auto h-16 w-16 animate-spin text-primary" />
@@ -426,7 +412,7 @@ export function SurveyForm() {
       
       <FormProvider {...methods}>
         <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
-          <div ref={scrollContainerRef} className="h-full w-full overflow-y-hidden overflow-x-hidden snap-y snap-mandatory scroll-smooth">
+          <div ref={scrollContainerRef} className="h-full w-full overflow-hidden">
             {renderIntro()}
             {questions.map((q, i) => renderQuestion(q, i))}
             {renderSummary()}
@@ -436,7 +422,7 @@ export function SurveyForm() {
 
       {!isIntro && !summary && !isSubmitting && (
         <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2">
-            <Button type="button" variant="ghost" onClick={handlePrev} disabled={isIntro || step === 0}>
+            <Button type="button" variant="ghost" onClick={handlePrev} disabled={isIntro || currentStep === 0}>
               <ArrowUp className="h-5 w-5" />
             </Button>
             <Button type="button" variant="ghost" onClick={handleNext} disabled={currentQuestion?.type === 'likert'}>
