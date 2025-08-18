@@ -45,15 +45,20 @@ export function SurveyForm() {
 
   const isQuestion = currentQuestion?.type !== 'header';
   const totalQuestions = questionOnlyQuestions.length;
-
+  
+  const currentQuestionIndex = useMemo(() => {
+    if (isIntro || !currentQuestion || currentQuestion.type === 'header') return -1;
+    return questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id);
+  }, [isIntro, currentStep, currentQuestion]);
+  
   const progress = useMemo(() => {
     if (summary || isSubmitting) return 100;
     if (isIntro) return 0;
+    if (currentQuestionIndex === -1) return 0;
     
-    const questionsAnswered = Object.values(getValues()).filter(Boolean).length;
-    
-    return (questionsAnswered / totalQuestions) * 100;
-  }, [getValues, totalQuestions, summary, isSubmitting, isIntro, currentStep]);
+    // Calculate progress based on the current question's index
+    return ((currentQuestionIndex) / totalQuestions) * 100;
+  }, [currentQuestionIndex, totalQuestions, summary, isSubmitting, isIntro]);
 
 
   useEffect(() => {
@@ -365,11 +370,11 @@ export function SurveyForm() {
   const ActiveScreen = useCallback(() => {
     if (isIntro) return renderIntro();
     if (summary) return renderSummary();
-    if (isSubmitting) return renderSummary(); // Or a specific submitting screen
+    if (isSubmitting) return renderSummary();
     if (currentStep < questions.length) {
       return renderQuestion(questions[currentStep], currentStep);
     }
-    return renderIntro(); // Fallback
+    return renderIntro();
   }, [isIntro, summary, isSubmitting, currentStep, renderIntro, renderSummary, renderQuestion]);
 
   return (
