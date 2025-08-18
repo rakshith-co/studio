@@ -52,6 +52,7 @@ export function SurveyForm() {
   }, [currentQuestion, getValues]);
 
   const { mainText, exampleText } = useMemo(() => {
+    if (!questionText) return { mainText: '', exampleText: null };
     const match = questionText.match(/(.*)\((Example:.*)\)/s);
     if (match) {
         return { mainText: match[1].trim(), exampleText: match[2].trim() };
@@ -233,45 +234,45 @@ export function SurveyForm() {
           </motion.div>
           
           <motion.div 
-              className="grid grid-cols-2 gap-2 sm:gap-6 mt-6 sm:mt-12 max-w-4xl mx-auto"
+              className="grid grid-cols-2 gap-4 mt-8 sm:mt-12 max-w-md mx-auto"
               initial="hidden"
               animate="visible"
               variants={{
                   visible: { transition: { staggerChildren: 0.2 } }
               }}
           >
-              <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+              <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
                   <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
-                      <CardHeader className="items-center p-2 sm:p-6">
-                          <FileText className="w-6 h-6 sm:w-10 sm:h-10 text-primary"/>
-                          <CardTitle className="text-xs sm:text-xl mt-1">Questions</CardTitle>
+                      <CardHeader className="items-center p-4 sm:p-6">
+                          <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
+                          <CardTitle className="text-base sm:text-xl mt-2">Questions</CardTitle>
                       </CardHeader>
-                      <CardContent className="p-2 sm:p-6 pt-0">
-                          <p className="text-xl sm:text-4xl font-bold">{totalQuestions}</p>
+                      <CardContent className="p-4 sm:p-6 pt-0">
+                          <p className="text-2xl sm:text-4xl font-bold">{totalQuestions}</p>
                           <p className="text-muted-foreground text-xs sm:text-base">in-depth</p>
                       </CardContent>
                   </Card>
               </motion.div>
-              <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+              <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
                   <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
-                      <CardHeader className="items-center p-2 sm:p-6">
-                          <Clock className="w-6 h-6 sm:w-10 sm:h-10 text-primary"/>
-                          <CardTitle className="text-xs sm:text-xl mt-1">Duration</CardTitle>
+                      <CardHeader className="items-center p-4 sm:p-6">
+                          <Clock className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
+                          <CardTitle className="text-base sm:text-xl mt-2">Duration</CardTitle>
                       </CardHeader>
-                      <CardContent className="p-2 sm:p-6 pt-0">
-                          <p className="text-xl sm:text-4xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
+                      <CardContent className="p-4 sm:p-6 pt-0">
+                          <p className="text-2xl sm:text-4xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
                           <p className="text-muted-foreground text-xs sm:text-base">minutes</p>
                       </CardContent>
                   </Card>
               </motion.div>
-              <motion.div className="col-span-2 mt-2 sm:mt-6" variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+              <motion.div className="col-span-2 mt-4" variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
                   <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
-                      <CardHeader className="items-center p-2 sm:p-6">
-                          <BarChart className="w-6 h-6 sm:w-10 sm:h-10 text-primary"/>
-                          <CardTitle className="text-xs sm:text-xl mt-1">Reward</CardTitle>
+                      <CardHeader className="items-center p-4 sm:p-6">
+                          <BarChart className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
+                          <CardTitle className="text-base sm:text-xl mt-2">Reward</CardTitle>
                       </CardHeader>
-                      <CardContent className="p-2 sm:p-6 pt-0">
-                          <p className="text-sm sm:text-lg font-bold">Summary</p>
+                      <CardContent className="p-4 sm:p-6 pt-0">
+                          <p className="text-base sm:text-lg font-bold">Summary</p>
                           <p className="text-muted-foreground text-xs sm:text-base">of your behavior</p>
                       </CardContent>
                   </Card>
@@ -279,7 +280,7 @@ export function SurveyForm() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.5 }} className="mt-auto pb-4">
-              <Button size="lg" className="mt-6 sm:mt-8 text-base sm:text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={() => setIsIntro(false)}>
+              <Button size="lg" className="mt-8 text-base sm:text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={() => setIsIntro(false)}>
                   Start Your Analysis <ArrowRight className="ml-2" />
               </Button>
           </motion.div>
@@ -379,15 +380,11 @@ export function SurveyForm() {
             <Button type="button" variant="ghost" onClick={handlePrev} disabled={step === 0}>
               <ArrowLeft className="mr-2 h-4 w-4" /> Back
             </Button>
-            {currentQuestion.type === 'header' ? (
-              <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(224,36,36,0.6)]">
-                Continue <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            ) : (
+            {currentQuestion.type === 'header' || currentQuestion.type !== 'likert' ? (
               <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(224,36,36,0.6)]">
                 {step === questions.length - 1 ? 'Finish & See Results' : 'Next'} <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-            )}
+            ) : null}
           </div>
         </form>
       </FormProvider>
