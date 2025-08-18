@@ -120,7 +120,7 @@ export function SurveyForm() {
             {...methods.register(fieldName)}
             type={question.type}
             placeholder="Type your answer here..."
-            className="bg-input border-2 border-transparent focus:border-primary focus:ring-primary/50 shadow-inner"
+            className="bg-input/50 border-2 border-transparent focus:border-primary focus:ring-primary/50 shadow-inner backdrop-blur-sm"
           />
         );
       case 'radio':
@@ -149,7 +149,7 @@ export function SurveyForm() {
                       {...methods.register('genderOther')}
                       type="text"
                       placeholder="Please specify"
-                      className="mt-2 bg-input border-2 border-transparent focus:border-primary focus:ring-primary/50 shadow-inner"
+                      className="mt-2 bg-input/50 border-2 border-transparent focus:border-primary focus:ring-primary/50 shadow-inner backdrop-blur-sm"
                       />
                     </motion.div>
                 )}
@@ -169,7 +169,7 @@ export function SurveyForm() {
                   `flex-1 transition-all duration-200 transform hover:scale-105 rounded-full px-2 py-6 text-xs sm:text-sm`,
                   watchedValue === option.value 
                     ? 'bg-primary text-primary-foreground shadow-[0_0_25px_rgba(224,36,36,0.8)]' 
-                    : 'bg-secondary text-secondary-foreground hover:bg-primary/80'
+                    : 'bg-secondary/50 text-secondary-foreground hover:bg-primary/80 backdrop-blur-sm'
                 )}
                 onClick={() => methods.setValue(fieldName, option.value, { shouldValidate: true })}
               >
@@ -218,7 +218,7 @@ export function SurveyForm() {
                 }}
             >
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                    <Card className="bg-card/80 backdrop-blur border-primary/20 h-full">
+                    <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
                         <CardHeader className="items-center">
                             <FileText className="w-10 h-10 text-primary"/>
                             <CardTitle>Questions</CardTitle>
@@ -230,7 +230,7 @@ export function SurveyForm() {
                     </Card>
                 </motion.div>
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                    <Card className="bg-card/80 backdrop-blur border-primary/20 h-full">
+                    <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
                         <CardHeader className="items-center">
                             <Clock className="w-10 h-10 text-primary"/>
                             <CardTitle>Duration</CardTitle>
@@ -242,7 +242,7 @@ export function SurveyForm() {
                     </Card>
                 </motion.div>
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                    <Card className="bg-card/80 backdrop-blur border-primary/20 h-full">
+                    <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
                         <CardHeader className="items-center">
                             <BarChart className="w-10 h-10 text-primary"/>
                             <CardTitle>Reward</CardTitle>
@@ -267,7 +267,7 @@ export function SurveyForm() {
   const renderContent = () => {
     if (isSubmitting) {
       return (
-        <div className="text-center flex flex-col items-center justify-center min-h-[400px]">
+        <div className="text-center flex flex-col items-center justify-center min-h-[300px]">
           <Loader className="mx-auto h-16 w-16 animate-spin text-primary" />
           <h2 className="mt-6 text-3xl font-bold tracking-tight">Analyzing Your Responses...</h2>
           <p className="text-muted-foreground text-lg">Our AI is crafting your personalized insights.</p>
@@ -278,7 +278,7 @@ export function SurveyForm() {
       return (
         <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
            {showConfetti && <Confetti />}
-          <Card className="bg-card/80 border-primary/50 backdrop-blur-lg max-w-2xl mx-auto text-center shadow-2xl shadow-primary/20">
+          <Card className="bg-card/50 border-primary/50 backdrop-blur-lg max-w-2xl mx-auto text-center shadow-2xl shadow-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center justify-center gap-3 text-4xl font-bold text-primary tracking-tighter">
                 <Sparkles className="w-8 h-8"/> Your Insights Report
@@ -309,6 +309,12 @@ export function SurveyForm() {
       );
     }
     
+    let questionText = currentQuestion.text;
+    if (currentQuestion.id === 'darkPatternsHeader') {
+      const name = getValues('name');
+      questionText = `Great ${name ? name : 'you'}, let's identify if you experience dark patterns in quick com app`;
+    }
+
     return (
       <FormProvider {...methods}>
         <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="w-full max-w-3xl mx-auto">
@@ -326,14 +332,14 @@ export function SurveyForm() {
               }}
               className="w-full"
             >
-              <Card className="bg-card/80 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10">
+              <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10">
                 <CardHeader className="text-center">
                   {isQuestion && (
                     <p className="text-primary font-bold mb-2 tracking-widest">QUESTION {currentQuestionIndex + 1}</p>
                   )}
-                  <CardTitle className="text-2xl md:text-3xl font-headline font-bold">{currentQuestion.text}</CardTitle>
+                  <CardTitle className="text-2xl md:text-3xl font-headline font-bold">{questionText}</CardTitle>
                 </CardHeader>
-                <CardContent className="my-8 min-h-[150px] flex items-center justify-center">
+                <CardContent className="my-8 min-h-[120px] flex items-center justify-center">
                   {isQuestion && renderInput(currentQuestion)}
                 </CardContent>
               </Card>
@@ -361,9 +367,12 @@ export function SurveyForm() {
 
   return (
     <main className="relative flex flex-col items-center justify-center min-h-screen w-full bg-background p-4 md:p-8 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/20 via-transparent to-transparent z-0"></div>
-        <div className="absolute top-[-20%] left-[10%] w-[40%] h-[40%] bg-primary/30 rounded-full blur-[180px] opacity-40"></div>
-        <div className="absolute bottom-[-20%] right-[10%] w-[40%] h-[40%] bg-primary/30 rounded-full blur-[180px] opacity-40"></div>
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent"></div>
+          <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse"></div>
+          <div className="absolute bottom-[-30%] right-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse animation-delay-4000"></div>
+        </div>
+
 
       <div className="z-10 w-full flex-grow flex items-center justify-center">
         {renderContent()}

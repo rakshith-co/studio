@@ -79,7 +79,7 @@ export const questions: Question[] = [
   {
     id: 'darkPatternsHeader',
     type: 'header',
-    text: 'Great! Let\'s see if you experience dark patterns in quick commerce apps',
+    text: "Great! Let's see if you experience dark patterns in quick commerce apps",
   },
   ...[
     'Adding additional products to users’ shopping carts without their consent in quick com apps. (Example: An extra snack or trial product gets added automatically at checkout.)',
