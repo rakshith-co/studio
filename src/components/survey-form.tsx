@@ -44,17 +44,16 @@ export function SurveyForm() {
   const currentQuestion = useMemo(() => questions[currentStep], [currentStep]);
 
   const isQuestion = currentQuestion?.type !== 'header';
-  const currentQuestionIndex = isQuestion ? questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id) : -1;
   const totalQuestions = questionOnlyQuestions.length;
 
   const progress = useMemo(() => {
     if (summary || isSubmitting) return 100;
     if (isIntro) return 0;
     
-    const questionsAnswered = questions.slice(0, currentStep).filter(q => q.type !== 'header').length;
+    const questionsAnswered = Object.values(getValues()).filter(Boolean).length;
     
     return (questionsAnswered / totalQuestions) * 100;
-  }, [currentStep, totalQuestions, summary, isSubmitting, isIntro]);
+  }, [getValues, totalQuestions, summary, isSubmitting, isIntro, currentStep]);
 
 
   useEffect(() => {
@@ -120,7 +119,7 @@ export function SurveyForm() {
     setIsSubmitting(false);
   };
   
-  const renderInput = (question: Question) => {
+  const renderInput = useCallback((question: Question) => {
     const fieldName = question.id as keyof SurveySchema;
     const watchedValue = watch(fieldName);
 
@@ -219,19 +218,9 @@ export function SurveyForm() {
       default:
         return null;
     }
-  };
+  }, [watch, handleNext, methods]);
 
-  const ActiveScreen = () => {
-    if (isIntro) return renderIntro();
-    if (summary) return renderSummary();
-    if (isSubmitting) return renderSummary();
-    if (currentStep < questions.length) {
-      return renderQuestion(questions[currentStep], currentStep);
-    }
-    return renderIntro(); // Fallback
-  }
-
-  const renderIntro = () => (
+  const renderIntro = useCallback(() => (
     <div id="step--1" className="h-full w-full flex flex-col justify-center items-center text-center p-4">
       <div className="flex flex-col justify-center items-center h-full max-w-sm mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -294,9 +283,9 @@ export function SurveyForm() {
         </motion.div>
       </div>
     </div>
-  );
+  ), [totalQuestions, handleNext]);
   
-  const renderQuestion = (question: Question, index: number) => {
+  const renderQuestion = useCallback((question: Question, index: number) => {
     const isHeader = question.type === 'header';
     const currentQText = isHeader && question.id === 'darkPatternsHeader' ? `Great ${getValues('name') || 'you'}, let's identify if you experience dark patterns in quick com app` : question.text;
     const { mainText: qMainText, exampleText: qExampleText } = (isHeader ? { mainText: currentQText, exampleText: null } : (() => {
@@ -326,9 +315,9 @@ export function SurveyForm() {
         </div>
       </div>
     );
-  };
+  }, [getValues, renderInput]);
   
-  const renderSummary = () => (
+  const renderSummary = useCallback(() => (
     <div id={`step-${questions.length + 1}`} className="h-full w-full flex flex-col items-center justify-center p-4">
       {isSubmitting ? (
           <div className="text-center flex flex-col items-center justify-center min-h-[300px]">
@@ -371,7 +360,17 @@ export function SurveyForm() {
           )
         )}
     </div>
-  );
+  ), [isSubmitting, summary, showConfetti]);
+
+  const ActiveScreen = useCallback(() => {
+    if (isIntro) return renderIntro();
+    if (summary) return renderSummary();
+    if (isSubmitting) return renderSummary(); // Or a specific submitting screen
+    if (currentStep < questions.length) {
+      return renderQuestion(questions[currentStep], currentStep);
+    }
+    return renderIntro(); // Fallback
+  }, [isIntro, summary, isSubmitting, currentStep, renderIntro, renderSummary, renderQuestion]);
 
   return (
     <main className="relative h-screen w-full bg-background overflow-hidden flex items-center justify-center">
@@ -419,7 +418,7 @@ export function SurveyForm() {
               <Button type="button" variant="ghost" onClick={handlePrev} disabled={isIntro || currentStep === 0}>
                 <ArrowUp className="h-5 w-5" />
               </Button>
-              <Button type="button" variant="ghost" onClick={handleNext} disabled={(currentQuestion?.type === 'likert' || (currentQuestion?.type === 'radio' && currentStep !== questions.length -1))}>
+              <Button type="button" variant="ghost" onClick={handleNext} disabled={!!currentQuestion && (currentQuestion.type === 'likert' || currentQuestion.type === 'radio' || (currentQuestion.type === 'radio-other' && watch('gender') !== 'other'))}>
                  <ArrowDown className="h-5 w-5" />
               </Button>
           </div>
