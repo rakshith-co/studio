@@ -73,27 +73,38 @@ export function SurveyForm() {
   const totalQuestions = questionOnlyQuestions.length;
   
   const currentQuestionIndex = useMemo(() => {
-    if (isIntro || !currentQuestion || currentQuestion.type === 'header') return -1;
+    if (isIntro || !isQuestion || !currentQuestion) {
+        return -1;
+    }
     const qIndex = questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id);
     return qIndex;
-  }, [isIntro, currentStep, currentQuestion]);
+  }, [isIntro, isQuestion, currentStep, currentQuestion]);
   
   const progress = useMemo(() => {
     if (summary || isSubmitting) return 100;
     if (isIntro) return 0;
-    if (currentQuestionIndex === -1) {
-        // Find the next question to calculate progress for headers
-        const nextQuestionIndex = questions.slice(currentStep + 1).findIndex(q => q.type !== 'header');
-        if (nextQuestionIndex !== -1) {
-            const globalNextIndex = currentStep + 1 + nextQuestionIndex;
-            const question = questions[globalNextIndex];
-            const qIndex = questionOnlyQuestions.findIndex(q => q.id === question.id);
-            return (qIndex / totalQuestions) * 100;
+
+    let effectiveQuestionIndex = -1;
+
+    if (currentQuestion?.type === 'header') {
+        // For headers, find the index of the *next* actual question
+        for (let i = currentStep + 1; i < questions.length; i++) {
+            const nextQuestion = questions[i];
+            if (nextQuestion.type !== 'header') {
+                effectiveQuestionIndex = questionOnlyQuestions.findIndex(q => q.id === nextQuestion.id);
+                // We want the progress to reflect the step *before* this question
+                effectiveQuestionIndex--; 
+                break;
+            }
         }
-        return 0;
+    } else if (currentQuestion) {
+        effectiveQuestionIndex = questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id);
     }
-    return ((currentQuestionIndex) / totalQuestions) * 100;
-  }, [currentQuestionIndex, totalQuestions, summary, isSubmitting, isIntro, currentStep]);
+
+    if (effectiveQuestionIndex < 0) return 0;
+
+    return ((effectiveQuestionIndex + 1) / totalQuestions) * 100;
+  }, [currentStep, questions, questionOnlyQuestions, totalQuestions, isIntro, summary, isSubmitting, currentQuestion]);
 
 
   useEffect(() => {
@@ -132,7 +143,7 @@ export function SurveyForm() {
         await methods.handleSubmit(onSubmit)();
       }
     }
-  }, [isIntro, currentStep, questions, isQuestion, currentQuestion, trigger, getValues, methods]);
+  }, [isIntro, currentStep, isQuestion, currentQuestion, trigger, getValues, methods]);
 
   const handlePrev = useCallback(() => {
     if (isIntro) return;
@@ -338,7 +349,7 @@ export function SurveyForm() {
     return (
       <div key={question.id} id={`step-${index}`} className="h-full w-full flex flex-col items-center justify-center p-4">
         <div className="relative w-full max-w-md mx-auto">
-          <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full flex flex-col justify-center min-h-[300px] sm:min-h-[350px]">
+          <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full flex flex-col justify-center">
             <CardHeader className="text-center px-4 pt-6 sm:px-6">
               {qIsQuestion && (
                 <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {qIndex + 1}</p>
@@ -348,7 +359,7 @@ export function SurveyForm() {
                   <CardDescription className="text-center text-xs sm:text-sm text-muted-foreground pt-2">{qExampleText}</CardDescription>
               )}
             </CardHeader>
-            <CardContent className="my-4 flex flex-grow items-center justify-center px-4 sm:px-6">
+            <CardContent className="py-4 flex flex-grow items-center justify-center px-4 sm:px-6">
               {qIsQuestion ? renderInput(question) : <div />}
             </CardContent>
           </Card>
@@ -465,3 +476,5 @@ export function SurveyForm() {
     </main>
   );
 }
+
+    
