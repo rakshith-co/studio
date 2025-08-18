@@ -297,7 +297,7 @@ export function SurveyForm() {
     return (
       <div id={`step-${index}`} className="h-screen w-full flex flex-col items-center justify-center p-4 snap-center">
         <div className="relative w-full max-w-md mx-auto">
-          <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full flex flex-col justify-center">
+          <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full flex flex-col justify-center min-h-[300px] sm:min-h-[350px]">
             <CardHeader className="text-center px-4 pt-6 sm:px-6">
               {qIsQuestion && (
                 <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {qIndex + 1}</p>
@@ -380,12 +380,12 @@ export function SurveyForm() {
       
       <FormProvider {...methods}>
         <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
-          <div ref={setScrollContainer} className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth pl-12">
+          <div ref={setScrollContainer} className="h-full w-full overflow-y-auto snap-y snap-mandatory scroll-smooth pl-12">
             {renderIntro()}
             {questions.map((q, i) => (
-                <React.Fragment key={q.id}>
+                <div key={q.id}>
                   {renderQuestion(q, i)}
-                </React.Fragment>
+                </div >
             ))}
             {renderSummary()}
           </div>
