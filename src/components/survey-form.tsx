@@ -315,6 +315,14 @@ export function SurveyForm() {
       questionText = `Great ${name ? name : 'you'}, let's identify if you experience dark patterns in quick com app`;
     }
 
+    const { mainText, exampleText } = useMemo(() => {
+        const match = questionText.match(/(.*)\((Example:.*)\)/s);
+        if (match) {
+            return { mainText: match[1].trim(), exampleText: match[2].trim() };
+        }
+        return { mainText: questionText, exampleText: null };
+    }, [questionText]);
+
     return (
       <FormProvider {...methods}>
         <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="w-full max-w-3xl mx-auto">
@@ -332,17 +340,28 @@ export function SurveyForm() {
               }}
               className="w-full"
             >
-              <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10">
-                <CardHeader className="text-center">
-                  {isQuestion && (
-                    <p className="text-primary font-bold mb-2 tracking-widest">QUESTION {currentQuestionIndex + 1}</p>
-                  )}
-                  <CardTitle className="text-2xl md:text-3xl font-headline font-bold">{questionText}</CardTitle>
-                </CardHeader>
-                <CardContent className="my-8 min-h-[120px] flex items-center justify-center">
-                  {isQuestion && renderInput(currentQuestion)}
-                </CardContent>
-              </Card>
+              <div className="space-y-4">
+                <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl">
+                  <CardHeader className="text-center">
+                    {isQuestion && (
+                      <p className="text-primary font-bold mb-2 tracking-widest">QUESTION {currentQuestionIndex + 1}</p>
+                    )}
+                    <CardTitle className="text-2xl md:text-3xl font-headline font-bold">{mainText}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="my-8 min-h-[120px] flex items-center justify-center">
+                    {isQuestion && renderInput(currentQuestion)}
+                  </CardContent>
+                </Card>
+                {exampleText && (
+                   <motion.div initial={{opacity: 0}} animate={{opacity: 1}} transition={{delay: 0.2}}>
+                    <Card className="bg-card/30 border-primary/10 backdrop-blur-md shadow-lg shadow-primary/5 rounded-2xl">
+                        <CardContent className="p-4">
+                            <p className="text-sm text-muted-foreground text-center">{exampleText}</p>
+                        </CardContent>
+                    </Card>
+                   </motion.div>
+                )}
+              </div>
               <div className="flex justify-between items-center mt-8">
                 <Button type="button" variant="ghost" onClick={handlePrev} disabled={step === 0}>
                   <ArrowLeft className="mr-2" /> Back
