@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Confetti } from './confetti';
 import { Logo } from './icons';
 import { cn } from '@/lib/utils';
+import React from 'react';
 
 const formId = 'q-commerce-survey-form';
 
@@ -110,6 +111,7 @@ export function SurveyForm() {
 
   const handleNext = async () => {
     if (isIntro) {
+      setIsIntro(false);
       scrollToStep(0);
       return;
     }
@@ -406,7 +408,7 @@ export function SurveyForm() {
   );
 
   return (
-    <main className="relative h-screen w-full bg-background overflow-hidden">
+    <main className="relative h-screen w-full bg-background overflow-hidden pl-12">
       <div className="absolute inset-0 -z-20">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent"></div>
         <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse"></div>
@@ -424,7 +426,7 @@ export function SurveyForm() {
       
       <FormProvider {...methods}>
         <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
-          <div ref={scrollContainerRef} className="h-full w-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth">
+          <div ref={scrollContainerRef} className="h-full w-full overflow-y-hidden overflow-x-hidden snap-y snap-mandatory scroll-smooth">
             {renderIntro()}
             {questions.map((q, i) => renderQuestion(q, i))}
             {renderSummary()}
