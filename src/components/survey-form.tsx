@@ -44,16 +44,6 @@ export function SurveyForm() {
   const currentQuestionIndex = isQuestion ? questionOnlyQuestions.findIndex(q => q.id === currentQuestion.id) : -1;
   const totalQuestions = questionOnlyQuestions.length;
 
-  const progress = useMemo(() => {
-    if (summary || isSubmitting) return 100;
-    if (currentQuestionIndex === -1) {
-      if (step === 0) return 0;
-      const prevQuestionIndex = questionOnlyQuestions.findIndex(q => q.id === questions[step - 1]?.id);
-      return ((prevQuestionIndex + 1) / totalQuestions) * 100;
-    }
-    return ((currentQuestionIndex) / totalQuestions) * 100;
-  }, [currentQuestionIndex, totalQuestions, step, summary, isSubmitting]);
-  
   const questionText = useMemo(() => {
     let text = currentQuestion.text;
     if (currentQuestion.id === 'darkPatternsHeader') {
@@ -70,6 +60,16 @@ export function SurveyForm() {
     }
     return { mainText: questionText, exampleText: null };
   }, [questionText]);
+
+  const progress = useMemo(() => {
+    if (summary || isSubmitting) return 100;
+    if (currentQuestionIndex === -1) {
+      if (step === 0) return 0;
+      const prevQuestionIndex = questionOnlyQuestions.findIndex(q => q.id === questions[step - 1]?.id);
+      return ((prevQuestionIndex + 1) / totalQuestions) * 100;
+    }
+    return ((currentQuestionIndex) / totalQuestions) * 100;
+  }, [currentQuestionIndex, totalQuestions, step, summary, isSubmitting]);
 
   useEffect(() => {
     if (progress === 100 && summary) {
@@ -146,7 +146,7 @@ export function SurveyForm() {
           <RadioGroup
             onValueChange={(value) => methods.setValue(fieldName, value, { shouldValidate: true })}
             value={watchedValue as string}
-            className="gap-4"
+            className="gap-2 sm:gap-4"
           >
             {question.options?.map((option) => (
               <div key={option.value} className="flex items-center">
@@ -183,7 +183,7 @@ export function SurveyForm() {
                 type="button"
                 variant={watchedValue === option.value ? 'default' : 'secondary'}
                 className={cn(
-                  `flex-1 transition-all duration-200 transform hover:scale-105 rounded-full px-4 py-3 text-sm`,
+                  `flex-1 transition-all duration-200 transform hover:scale-105 rounded-full px-4 py-2 sm:py-3 text-xs sm:text-sm`,
                   watchedValue === option.value 
                     ? 'bg-primary text-primary-foreground shadow-[0_0_25px_rgba(224,36,36,0.8)]' 
                     : 'bg-secondary/50 text-secondary-foreground hover:bg-primary/80 backdrop-blur-sm'
@@ -219,15 +219,15 @@ export function SurveyForm() {
 
   if (isIntro) {
     return (
-        <div className="w-full max-w-5xl mx-auto text-center">
+        <div className="w-full max-w-5xl mx-auto text-center flex flex-col justify-center flex-grow">
              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <Logo className="mx-auto h-20 w-20 text-primary mb-4" />
+                <Logo className="mx-auto h-16 w-16 sm:h-20 sm:w-20 text-primary mb-2 sm:mb-4" />
                 <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold font-headline tracking-tighter">Q-Commerce Insights</h1>
-                <p className="text-muted-foreground text-sm sm:text-lg md:text-xl mt-4 max-w-2xl mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
+                <p className="text-muted-foreground text-sm sm:text-lg mt-2 sm:mt-4 max-w-2xl mx-auto">Uncover the hidden psychological tricks in your favorite quick commerce apps.</p>
             </motion.div>
             
             <motion.div 
-                className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 max-w-4xl mx-auto"
+                className="grid grid-cols-3 gap-2 sm:gap-6 mt-6 sm:mt-12 max-w-4xl mx-auto"
                 initial="hidden"
                 animate="visible"
                 variants={{
@@ -236,44 +236,44 @@ export function SurveyForm() {
             >
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
                     <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
-                        <CardHeader className="items-center">
-                            <FileText className="w-10 h-10 text-primary"/>
-                            <CardTitle>Questions</CardTitle>
+                        <CardHeader className="items-center p-2 sm:p-6">
+                            <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
+                            <CardTitle className="text-sm sm:text-xl">Questions</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <p className="text-4xl font-bold">{totalQuestions}</p>
-                            <p className="text-muted-foreground">in-depth questions</p>
+                        <CardContent className="p-2 sm:p-6 pt-0">
+                            <p className="text-2xl sm:text-4xl font-bold">{totalQuestions}</p>
+                            <p className="text-muted-foreground text-xs sm:text-base">in-depth</p>
                         </CardContent>
                     </Card>
                 </motion.div>
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
                     <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
-                        <CardHeader className="items-center">
-                            <Clock className="w-10 h-10 text-primary"/>
-                            <CardTitle>Duration</CardTitle>
+                        <CardHeader className="items-center p-2 sm:p-6">
+                            <Clock className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
+                            <CardTitle className="text-sm sm:text-xl">Duration</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <p className="text-4xl font-bold">~{Math.ceil(totalQuestions * 0.25)}</p>
-                            <p className="text-muted-foreground">minutes to complete</p>
+                        <CardContent className="p-2 sm:p-6 pt-0">
+                            <p className="text-2xl sm:text-4xl font-bold">~{Math.ceil(totalQuestions * 0.15)}</p>
+                            <p className="text-muted-foreground text-xs sm:text-base">minutes</p>
                         </CardContent>
                     </Card>
                 </motion.div>
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
                     <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
-                        <CardHeader className="items-center">
-                            <BarChart className="w-10 h-10 text-primary"/>
-                            <CardTitle>Reward</CardTitle>
+                        <CardHeader className="items-center p-2 sm:p-6">
+                            <BarChart className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
+                            <CardTitle className="text-sm sm:text-xl">Reward</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <p className="text-lg font-bold">Personalized Summary</p>
-                            <p className="text-muted-foreground">of your app behavior</p>
+                        <CardContent className="p-2 sm:p-6 pt-0">
+                            <p className="text-sm sm:text-lg font-bold">Summary</p>
+                            <p className="text-muted-foreground text-xs sm:text-base">of your behavior</p>
                         </CardContent>
                     </Card>
                 </motion.div>
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.5 }}>
-                <Button size="lg" className="mt-12 text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={() => setIsIntro(false)}>
+                <Button size="lg" className="mt-8 sm:mt-12 text-base sm:text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={() => setIsIntro(false)}>
                     Start Your Analysis <ArrowRight className="ml-2" />
                 </Button>
             </motion.div>
@@ -343,30 +343,28 @@ export function SurveyForm() {
               }}
               className="w-full"
             >
-              <div className="space-y-4">
-                <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl">
-                  <CardHeader className="text-center px-4 sm:px-6">
-                    {isQuestion && (
-                      <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {currentQuestionIndex + 1}</p>
-                    )}
-                    <CardTitle className="text-base sm:text-lg md:text-xl font-headline font-bold">{mainText}</CardTitle>
-                  </CardHeader>
+              <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl">
+                <CardHeader className="text-center px-4 sm:px-6">
+                  {isQuestion && (
+                    <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {currentQuestionIndex + 1}</p>
+                  )}
+                  <CardTitle className="text-base sm:text-lg md:text-xl font-headline font-bold">{mainText}</CardTitle>
+                </CardHeader>
 
-                  <CardContent className="my-4 min-h-[220px] sm:min-h-[260px] flex items-center justify-center px-4 sm:px-6">
-                    {isQuestion && renderInput(currentQuestion)}
-                  </CardContent>
-                </Card>
+                <CardContent className="my-4 min-h-[220px] sm:min-h-[260px] flex items-center justify-center px-4 sm:px-6">
+                  {isQuestion && renderInput(currentQuestion)}
+                </CardContent>
+              </Card>
 
-                {exampleText && (
-                   <motion.div initial={{opacity: 0}} animate={{opacity: 1}} transition={{delay: 0.2}}>
-                      <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl mt-4">
-                          <CardContent className="p-4">
-                              <CardDescription className="text-center text-xs sm:text-sm text-muted-foreground">{exampleText}</CardDescription>
-                          </CardContent>
-                      </Card>
-                   </motion.div>
-                )}
-              </div>
+              {exampleText && (
+                 <motion.div initial={{opacity: 0}} animate={{opacity: 1}} transition={{delay: 0.2}} className="mt-4">
+                    <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl">
+                        <CardContent className="p-4">
+                            <CardDescription className="text-center text-xs sm:text-sm text-muted-foreground">{exampleText}</CardDescription>
+                        </CardContent>
+                    </Card>
+                 </motion.div>
+              )}
             </motion.div>
           </AnimatePresence>
           <div className="flex justify-between items-center mt-6">
@@ -397,12 +395,12 @@ export function SurveyForm() {
         </div>
 
 
-      <div className="z-10 w-full flex-grow flex items-center justify-center pb-24">
+      <div className="z-10 w-full flex-grow flex items-center justify-center pb-20 sm:pb-24">
         {renderContent()}
       </div>
 
       {!summary && !isSubmitting && !isIntro && (
-        <div className="w-full max-w-md fixed bottom-8 left-1/2 -translate-x-1/2 px-4 z-20">
+        <div className="w-full max-w-md fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 px-4 z-20">
             <div className="flex justify-between text-xs text-muted-foreground mb-1">
                 <span>Progress</span>
                 <span>{Math.round(progress)}%</span>
