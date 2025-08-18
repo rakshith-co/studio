@@ -389,14 +389,10 @@ export function SurveyForm() {
   
   return (
     <main className="relative flex flex-col items-center h-screen w-full bg-background p-4 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent"></div>
-          <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse"></div>
-          <div className="absolute bottom-[-30%] right-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse animation-delay-4000"></div>
-        </div>
-
-      <div className="z-10 w-full flex-grow flex flex-col items-center justify-center">
-        {renderContent()}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent"></div>
+        <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse"></div>
+        <div className="absolute bottom-[-30%] right-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse animation-delay-4000"></div>
       </div>
 
       {!summary && !isSubmitting && !isIntro && (
@@ -409,6 +405,10 @@ export function SurveyForm() {
             </div>
         </div>
       )}
+
+      <div className="z-10 w-full flex-grow flex flex-col items-center justify-center">
+        {renderContent()}
+      </div>
     </main>
   );
 }
