@@ -135,7 +135,7 @@ export function SurveyForm() {
   
   const onSubmit = async (data: SurveySchema) => {
     setIsSubmitting(true);
-    scrollToView(questions.length); // For summary
+    scrollToView(questions.length + 1);
     const result = await submitSurvey(data);
     if (result.success) {
       setSummary(result.summary);
@@ -349,7 +349,7 @@ export function SurveyForm() {
   };
   
   const renderSummary = () => (
-    <div id="step-summary" className="h-screen w-full flex flex-col items-center justify-center p-4 shrink-0">
+    <div id={`step-${questions.length + 1}`} className="h-screen w-full flex flex-col items-center justify-center p-4 shrink-0">
       {isSubmitting ? (
           <div className="text-center flex flex-col items-center justify-center min-h-[300px]">
             <Loader className="mx-auto h-16 w-16 animate-spin text-primary" />
@@ -412,7 +412,7 @@ export function SurveyForm() {
       
       <FormProvider {...methods}>
         <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
-          <div ref={scrollContainerRef} className="h-full w-full overflow-hidden">
+          <div ref={scrollContainerRef} className="h-full w-full overflow-y-hidden snap-y snap-mandatory">
             {renderIntro()}
             {questions.map((q, i) => renderQuestion(q, i))}
             {renderSummary()}

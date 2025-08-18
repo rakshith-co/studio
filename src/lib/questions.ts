@@ -20,13 +20,13 @@ export const questions: Question[] = [
   {
     id: 'name',
     type: 'text',
-    text: 'Name (Optional)',
+    text: 'What is your name? (Optional)',
     required: false,
   },
   {
     id: 'age',
     type: 'number',
-    text: 'Age (in completed years)',
+    text: 'What is your age (in completed years)?',
     required: true,
   },
   {
