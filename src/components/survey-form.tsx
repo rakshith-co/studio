@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowUp, ArrowDown, BarChart, CheckCircle, Clock, FileText, Loader, Sparkles, Twitter } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowDown, BarChart, CheckCircle, Clock, FileText, Loader, Sparkles, Twitter } from 'lucide-react';
 
 import { questions, questionOnlyQuestions, likertOptions, type Question } from '@/lib/questions';
 import { surveySchema, type SurveySchema } from '@/lib/schema';
@@ -74,10 +74,20 @@ export function SurveyForm() {
   }, [progress, summary]);
 
   const scrollToStep = (newStep: number) => {
-    const elementId = newStep === -1 ? 'intro-card' : `step-${newStep}`;
-    const element = document.getElementById(elementId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (scrollContainer) {
+      const vh = window.innerHeight;
+      let scrollPosition;
+      if (newStep === -1) {
+        scrollPosition = 0; // Intro
+      } else if (newStep >= questions.length) {
+        scrollPosition = (questions.length + 1) * vh; // Summary
+      } else {
+        scrollPosition = (newStep + 1) * vh;
+      }
+      scrollContainer.scrollTo({
+        top: scrollPosition,
+        behavior: 'smooth'
+      });
       if (newStep !== -1) {
         setStep(newStep);
       }
@@ -123,14 +133,11 @@ export function SurveyForm() {
   
   const onSubmit = async (data: SurveySchema) => {
     setIsSubmitting(true);
+    scrollToStep(questions.length); 
     const result = await submitSurvey(data);
     if (result.success) {
       setSummary(result.summary);
       setShowConfetti(true);
-      const summaryElement = document.getElementById('summary-card');
-      if (summaryElement) {
-        summaryElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
     } else {
       toast({
         variant: 'destructive',
@@ -149,18 +156,33 @@ export function SurveyForm() {
       case 'text':
       case 'number':
         return (
-          <Input
-            {...methods.register(fieldName)}
-            type={question.type}
-            placeholder="Type your answer here..."
-            className="bg-input/50 border-2 border-transparent focus:border-primary focus:ring-primary/50 shadow-inner backdrop-blur-sm"
-          />
+            <div className="relative w-full max-w-xs mx-auto">
+              <Input
+                {...methods.register(fieldName)}
+                type={question.type}
+                placeholder="Type your answer here..."
+                className="bg-input/50 border-2 border-transparent focus:border-primary focus:ring-primary/50 shadow-inner backdrop-blur-sm pr-12"
+              />
+              <Button
+                type="button"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-10 bg-primary/80 hover:bg-primary"
+                onClick={handleNext}
+              >
+                <ArrowRight className="h-5 w-5" />
+              </Button>
+            </div>
         );
       case 'radio':
       case 'radio-other':
         return (
           <RadioGroup
-            onValueChange={(value) => methods.setValue(fieldName, value, { shouldValidate: true })}
+            onValueChange={(value) => {
+              methods.setValue(fieldName, value, { shouldValidate: true });
+              if (question.type === 'radio' || (question.type === 'radio-other' && value !== 'other')) {
+                setTimeout(() => handleNext(), 200);
+              }
+            }}
             value={watchedValue as string}
             className="gap-2 sm:gap-3"
           >
@@ -177,13 +199,21 @@ export function SurveyForm() {
                     <Label htmlFor={`${question.id}-other`} className="ml-3 text-sm sm:text-base cursor-pointer">Other</Label>
                 </div>
                 {watch('gender') === 'other' && (
-                    <motion.div initial={{opacity: 0, height: 0}} animate={{opacity: 1, height: 'auto'}} transition={{duration: 0.3}}>
+                    <motion.div initial={{opacity: 0, height: 0}} animate={{opacity: 1, height: 'auto'}} transition={{duration: 0.3}} className="relative">
                       <Input
                       {...methods.register('genderOther')}
                       type="text"
                       placeholder="Please specify"
-                      className="mt-2 bg-input/50 border-2 border-transparent focus:border-primary focus:ring-primary/50 shadow-inner backdrop-blur-sm"
+                      className="mt-2 bg-input/50 border-2 border-transparent focus:border-primary focus:ring-primary/50 shadow-inner backdrop-blur-sm pr-12"
                       />
+                       <Button
+                        type="button"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-10 bg-primary/80 hover:bg-primary mt-1"
+                        onClick={handleNext}
+                      >
+                        <ArrowRight className="h-5 w-5" />
+                      </Button>
                     </motion.div>
                 )}
                </>
@@ -295,7 +325,7 @@ export function SurveyForm() {
     const qIndex = qIsQuestion ? questionOnlyQuestions.findIndex(q => q.id === question.id) : -1;
 
     return (
-      <div id={`step-${index}`} className="h-screen w-full flex flex-col items-center justify-center p-4 snap-center">
+      <div key={question.id} className="h-screen w-full flex flex-col items-center justify-center p-4 snap-center">
         <div className="relative w-full max-w-md mx-auto">
           <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full flex flex-col justify-center min-h-[300px] sm:min-h-[350px]">
             <CardHeader className="text-center px-4 pt-6 sm:px-6">
@@ -380,13 +410,9 @@ export function SurveyForm() {
       
       <FormProvider {...methods}>
         <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
-          <div ref={setScrollContainer} className="h-full w-full overflow-hidden snap-y snap-mandatory scroll-smooth pl-12">
+          <div ref={setScrollContainer} className="h-full w-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth pl-8">
             {renderIntro()}
-            {questions.map((q, i) => (
-                <div key={q.id}>
-                  {renderQuestion(q, i)}
-                </div >
-            ))}
+            {questions.map((q, i) => renderQuestion(q, i))}
             {renderSummary()}
           </div>
         </form>
