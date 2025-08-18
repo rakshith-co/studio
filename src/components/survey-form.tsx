@@ -370,24 +370,30 @@ export function SurveyForm() {
               <CardTitle className="text-lg sm:text-xl font-headline font-bold">{titleContent}</CardTitle>
             </CardHeader>
             <CardContent className="py-4 flex flex-grow items-center justify-center px-4 sm:px-6">
-              {qIsQuestion ? renderInput(question) : <div />}
+              {qIsQuestion ? renderInput(question) : (
+                isHeader && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleNext}
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full h-12 w-12"
+                  >
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5, duration: 0.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+                    >
+                      <ArrowDown className="w-8 h-8 text-primary/70" />
+                    </motion.div>
+                  </Button>
+                )
+              )}
             </CardContent>
           </Card>
-          {isHeader && (
-             <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
-                <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-                >
-                    <ArrowDown className="w-8 h-8 text-primary/70" />
-                </motion.div>
-            </div>
-          )}
         </div>
       </div>
     );
-  }, [getValues, renderInput]);
+  }, [getValues, renderInput, handleNext]);
   
   const renderSummary = useCallback(() => (
     <div id={`step-${questions.length + 1}`} className="h-full w-full flex flex-col items-center justify-center p-4">
