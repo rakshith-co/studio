@@ -395,7 +395,7 @@ export function SurveyForm() {
         )}
         
         <FormProvider {...methods}>
-          <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full w-full max-w-lg">
+          <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full w-full max-w-lg pl-12">
             <div ref={mainContainerRef} className="h-full w-full overflow-hidden">
                <AnimatePresence mode="wait">
                   <motion.div
