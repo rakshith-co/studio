@@ -74,10 +74,13 @@ export function SurveyForm() {
   }, [progress, summary]);
 
   const scrollToStep = (newStep: number) => {
-    const element = document.getElementById(`step-${newStep}`);
+    const elementId = newStep === -1 ? 'intro-card' : `step-${newStep}`;
+    const element = document.getElementById(elementId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setStep(newStep);
+      if (newStep !== -1) {
+        setStep(newStep);
+      }
     }
   };
 
@@ -112,6 +115,9 @@ export function SurveyForm() {
   const handlePrev = () => {
     if (step > 0) {
       scrollToStep(step - 1);
+    } else {
+        setIsIntro(true)
+        scrollToStep(-1)
     }
   };
   
@@ -214,7 +220,7 @@ export function SurveyForm() {
   };
 
   const renderIntro = () => (
-    <div id="intro-card" className="h-screen w-full flex flex-col justify-center items-center text-center p-4">
+    <div id="intro-card" className="h-screen w-full flex flex-col justify-center items-center text-center p-4 snap-center">
       <div className="flex flex-col justify-center items-center h-full max-w-sm mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <Logo className="mx-auto h-12 w-12 text-primary mb-2" />
@@ -230,8 +236,8 @@ export function SurveyForm() {
                 visible: { transition: { staggerChildren: 0.2 } }
             }}
         >
-          <div className="grid grid-cols-2 gap-2">
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
+          <div className="flex justify-center gap-2">
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="w-1/2">
                 <Card className="bg-card/50 backdrop-blur-sm border-primary/20 shadow-lg shadow-primary/10 w-full">
                     <CardHeader className="items-center p-3">
                         <FileText className="w-6 h-6 text-primary"/>
@@ -243,7 +249,7 @@ export function SurveyForm() {
                     </CardContent>
                 </Card>
             </motion.div>
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="w-1/2">
                 <Card className="bg-card/50 backdrop-blur-sm border-primary/20 shadow-lg shadow-primary/10 w-full">
                     <CardHeader className="items-center p-3">
                         <Clock className="w-6 h-6 text-primary"/>
@@ -373,13 +379,13 @@ export function SurveyForm() {
       )}
       
       <FormProvider {...methods}>
-        <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full pl-12">
-          <div ref={setScrollContainer} className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
+        <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full">
+          <div ref={setScrollContainer} className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth pl-12">
             {renderIntro()}
             {questions.map((q, i) => (
-              <React.Fragment key={q.id}>
-                {renderQuestion(q, i)}
-              </React.Fragment>
+                <React.Fragment key={q.id}>
+                  {renderQuestion(q, i)}
+                </React.Fragment>
             ))}
             {renderSummary()}
           </div>
@@ -388,7 +394,7 @@ export function SurveyForm() {
 
       {!isIntro && !summary && !isSubmitting && (
         <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2">
-            <Button type="button" variant="ghost" onClick={handlePrev} disabled={step === 0}>
+            <Button type="button" variant="ghost" onClick={handlePrev} disabled={isIntro || step === 0}>
               <ArrowUp className="h-5 w-5" />
             </Button>
             <Button type="button" variant="ghost" onClick={handleNext} disabled={currentQuestion?.type === 'likert'}>
