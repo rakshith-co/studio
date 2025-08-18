@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowDown, ArrowUp, BarChart, CheckCircle, Clock, FileText, Loader, Share2, Sparkles, Twitter } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BarChart, CheckCircle, Clock, FileText, Loader, Share2, Sparkles, Twitter } from 'lucide-react';
 
 import { questions, questionOnlyQuestions, likertOptions, type Question } from '@/lib/questions';
 import { surveySchema, type SurveySchema } from '@/lib/schema';
@@ -209,7 +209,7 @@ export function SurveyForm() {
 
   const variants = {
     enter: (direction: number) => ({
-      y: direction > 0 ? '100vh' : '-100vh',
+      y: direction > 0 ? 50 : -50,
       opacity: 0,
     }),
     center: {
@@ -219,7 +219,7 @@ export function SurveyForm() {
     },
     exit: (direction: number) => ({
       zIndex: 0,
-      y: direction < 0 ? '100vh' : '-100vh',
+      y: direction < 0 ? 50 : -50,
       opacity: 0,
     }),
   };
@@ -242,7 +242,7 @@ export function SurveyForm() {
               }}
           >
               <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
-                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-auto shadow-[0_0_20px_rgba(224,36,36,0.2)]">
+                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
                       <CardHeader className="items-center p-4 sm:p-6">
                           <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
                           <CardTitle className="text-base sm:text-xl mt-2">Questions</CardTitle>
@@ -254,7 +254,7 @@ export function SurveyForm() {
                   </Card>
               </motion.div>
               <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-1">
-                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-auto shadow-[0_0_20px_rgba(224,36,36,0.2)]">
+                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full shadow-[0_0_20px_rgba(224,36,36,0.2)]">
                       <CardHeader className="items-center p-4 sm:p-6">
                           <Clock className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
                           <CardTitle className="text-base sm:text-xl mt-2">Duration</CardTitle>
@@ -281,7 +281,7 @@ export function SurveyForm() {
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.5 }} className="mt-auto pb-4">
               <Button size="lg" className="mt-8 text-base sm:text-lg font-bold tracking-wider rounded-full bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]" onClick={() => setIsIntro(false)}>
-                  Start Your Analysis <ArrowDown className="ml-2" />
+                  Start Your Analysis <ArrowRight className="ml-2" />
               </Button>
           </motion.div>
       </div>
@@ -347,17 +347,17 @@ export function SurveyForm() {
               animate="center"
               exit="exit"
               transition={{
-                y: { type: 'spring', stiffness: 200, damping: 25 },
-                opacity: { duration: 0.3 }
+                y: { type: 'spring', stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 }
               }}
               className="w-full h-full flex flex-col justify-center items-center"
             >
-              <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full">
+              <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto w-full min-h-[300px] sm:min-h-[400px] flex flex-col justify-center">
                 <CardHeader className="text-center px-4 sm:px-6">
                   {isQuestion && (
                     <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {currentQuestionIndex + 1}</p>
                   )}
-                  <CardTitle className="text-base sm:text-lg md:text-xl font-headline font-bold">{mainText}</CardTitle>
+                  <CardTitle className="text-lg sm:text-xl md:text-2xl font-headline font-bold">{mainText}</CardTitle>
                 </CardHeader>
                 <CardContent className="my-4 flex items-center justify-center px-4 sm:px-6">
                   {isQuestion ? renderInput(currentQuestion) : <div />}
@@ -374,11 +374,11 @@ export function SurveyForm() {
           </AnimatePresence>
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 flex justify-between items-center mt-6">
             <Button type="button" variant="ghost" onClick={handlePrev} disabled={step === 0}>
-              <ArrowUp className="mr-2 h-4 w-4" /> Back
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back
             </Button>
             {currentQuestion.type === 'header' || currentQuestion.type !== 'likert' ? (
               <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(224,36,36,0.6)]">
-                {step === questions.length - 1 ? 'Finish & See Results' : 'Next'} <ArrowDown className="ml-2 h-4 w-4" />
+                {step === questions.length - 1 ? 'Finish & See Results' : 'Next'} <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             ) : null}
           </div>
@@ -400,10 +400,12 @@ export function SurveyForm() {
       </div>
 
       {!summary && !isSubmitting && !isIntro && (
-        <div className="fixed right-4 top-1/2 -translate-y-1/2 h-64 w-4 z-20 flex flex-col items-center">
-          <Progress orientation="vertical" value={progress} className="w-2 h-full progress-bar-shine" />
-            <div className="text-xs text-muted-foreground mt-2">
-                {Math.round(progress)}%
+        <div className="fixed left-4 top-1/2 -translate-y-1/2 h-64 z-20 flex flex-col items-center">
+            <div className="relative h-full w-4 flex justify-center">
+                <Progress orientation="vertical" value={progress} className="w-2 h-full progress-bar-shine" />
+                <div className="absolute bottom-0 transform translate-y-full pt-2 text-xs text-primary font-bold">
+                    {Math.round(progress)}%
+                </div>
             </div>
         </div>
       )}
