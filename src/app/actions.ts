@@ -2,37 +2,12 @@
 'use server';
 
 import { summarizeSurveyResponses } from '@/ai/flows/summarize-survey-responses';
+import { db } from '@/lib/firebase';
 import { questionOnlyQuestions } from '@/lib/questions';
 import type { SurveySchema } from '@/lib/schema';
 import { surveySchema } from '@/lib/schema';
+import { addDoc, collection } from 'firebase/firestore';
 import { z } from 'zod';
-
-async function appendToGoogleSheet(data: Record<string, any>) {
-  const SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL;
-  if (!SCRIPT_URL) {
-    console.error("Google Script URL is not defined in environment variables.");
-    return; // Don't throw an error, just log it and move on.
-  }
-  
-  try {
-    const response = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    // Since the Apps Script returns a success/error JSON, we can check it.
-    const result = await response.json();
-    if (result.result !== 'success') {
-       console.error("Error writing to Google Sheet:", result.message);
-    }
-  } catch (error) {
-    console.error("Fetch error when writing to Google Sheet:", error);
-  }
-}
-
 
 export async function submitSurvey(data: SurveySchema) {
   try {
@@ -78,7 +53,13 @@ export async function submitSurvey(data: SurveySchema) {
       }
     });
 
-    appendToGoogleSheet(flatData);
+    // Save to Firestore
+    try {
+        await addDoc(collection(db, "surveys"), flatData);
+    } catch (error) {
+        console.error("Error writing to Firestore:", error);
+        // We won't block the user for this, but we will log the error.
+    }
 
     const summaryResult = await summaryPromise;
 
