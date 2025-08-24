@@ -156,12 +156,9 @@ export function SurveyForm() {
             description: 'An unexpected error occurred while submitting.',
         });
     } finally {
-        // Only set submitting to false if we haven't successfully gotten a summary
-        if (!summary) {
-            setIsSubmitting(false);
-        }
+        setIsSubmitting(false);
     }
-  }, [toast, summary]);
+  }, [toast]);
   
   const handleNext = useCallback(async () => {
     if (isIntro) {
@@ -463,7 +460,7 @@ export function SurveyForm() {
             <p className="text-muted-foreground text-lg">Our AI is crafting your personalized insights.</p>
           </div>
         )}
-       {summary && !isSubmitting && (
+       {summary && (
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }} 
             animate={{ opacity: 1, scale: 1 }} 
