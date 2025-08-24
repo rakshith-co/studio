@@ -387,14 +387,14 @@ export function SurveyForm() {
               <CardTitle className="text-lg sm:text-xl font-headline font-bold">{titleContent}</CardTitle>
             </CardHeader>
             <CardContent className="py-6 px-4 sm:px-6">
-              <div className="flex justify-center items-center">
+              <div className="flex justify-center items-center w-full">
                 {qIsQuestion ? renderInput(question) : (
                   isHeader && (
                     <Button
                       variant="default"
                       size="icon"
                       onClick={handleNext}
-                      className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full h-12 w-12 bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]"
+                      className="rounded-full h-12 w-12 bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]"
                     >
                       <motion.div
                         initial={{ opacity: 0, y: -10 }}
