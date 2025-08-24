@@ -379,32 +379,34 @@ export function SurveyForm() {
     return (
       <div key={question.id} id={`step-${index}`} className="h-full w-full flex flex-col items-center justify-center p-4">
         <div className="relative w-full max-w-md mx-auto">
-          <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl w-full flex flex-col justify-center">
+          <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl w-full">
             <CardHeader className="text-center px-4 pt-6 sm:px-6">
               {qIsQuestion && (
                 <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {qIndex + 1}</p>
               )}
               <CardTitle className="text-lg sm:text-xl font-headline font-bold">{titleContent}</CardTitle>
             </CardHeader>
-            <CardContent className="py-6 flex-grow-0 items-center justify-center px-4 sm:px-6">
-              {qIsQuestion ? renderInput(question) : (
-                isHeader && (
-                  <Button
-                    variant="default"
-                    size="icon"
-                    onClick={handleNext}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full h-12 w-12 bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]"
-                  >
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5, duration: 0.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+            <CardContent className="py-6 px-4 sm:px-6">
+              <div className="flex justify-center items-center">
+                {qIsQuestion ? renderInput(question) : (
+                  isHeader && (
+                    <Button
+                      variant="default"
+                      size="icon"
+                      onClick={handleNext}
+                      className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full h-12 w-12 bg-primary hover:bg-primary/90 shadow-[0_0_30px_rgba(224,36,36,0.7)]"
                     >
-                      <ArrowDown className="w-8 h-8 text-primary-foreground" />
-                    </motion.div>
-                  </Button>
-                )
-              )}
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, duration: 0.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+                      >
+                        <ArrowDown className="w-8 h-8 text-primary-foreground" />
+                      </motion.div>
+                    </Button>
+                  )
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -520,8 +522,3 @@ export function SurveyForm() {
     </main>
   );
 }
-
-    
-    
-
-    
