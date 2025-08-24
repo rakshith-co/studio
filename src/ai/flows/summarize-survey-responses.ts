@@ -32,7 +32,7 @@ const prompt = ai.definePrompt({
   output: {schema: SummarizeSurveyResponsesOutputSchema},
   prompt: `You are an AI assistant that summarizes survey responses. Based on the user's answers, provide a personalized and concise summary of their overall sentiment and key takeaways. 
 
-  The summary must be a single, well-written paragraph. Do not use more than one paragraph.
+  The summary must be a single, well-written paragraph. Do not use more than one paragraph. Do not use line breaks.
 
   Demographics: {{{demographics}}}
 

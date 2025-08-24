@@ -123,7 +123,7 @@ export function SurveyForm() {
 
 
   useEffect(() => {
-    if (progress === 50 || progress === 100 && !summary) {
+    if (progress === 100 && !summary) {
       setShowConfetti(true);
       const timer = setTimeout(() => setShowConfetti(false), 5000);
       return () => clearTimeout(timer);
@@ -143,6 +143,7 @@ export function SurveyForm() {
                 title: 'Submission Failed',
                 description: result?.error || 'An unknown error occurred.',
             });
+            setIsSubmitting(false); // <-- Reset loading on failure
         }
     } catch (error) {
         toast({
@@ -150,9 +151,9 @@ export function SurveyForm() {
             title: 'Submission Error',
             description: 'An unexpected error occurred while submitting.',
         });
-    } finally {
-        setIsSubmitting(false);
-    }
+        setIsSubmitting(false); // <-- Reset loading on error
+    } 
+    // `finally` is removed because we only want to stop submitting when there is a success
   }, [toast]);
   
   const handleNext = useCallback(async () => {
@@ -200,6 +201,7 @@ export function SurveyForm() {
     const watchedValue = watch(fieldName);
 
     const handleLikertOrRadioNext = async () => {
+        // A small delay to allow the state to update before proceeding
         setTimeout(() => {
           if (isLastQuestion) {
             handleSubmit(onSubmit)();
@@ -464,7 +466,7 @@ export function SurveyForm() {
                 className="w-full h-full flex items-center justify-center"
               >
                 <Card className="relative z-10 bg-card/70 border-primary/50 backdrop-blur-lg max-w-2xl mx-auto shadow-2xl shadow-primary/20 w-full max-h-[90vh] flex flex-col">
-                  <CardHeader className="flex-shrink-0">
+                  <CardHeader className="flex-shrink-0 text-center">
                     <CardTitle className="flex items-center justify-center gap-3 text-3xl sm:text-4xl font-bold text-primary tracking-tighter">
                       <Sparkles className="w-8 h-8"/> Your Insights Report
                     </CardTitle>
@@ -475,7 +477,7 @@ export function SurveyForm() {
                         <div className="whitespace-pre-wrap text-left p-4 my-4 bg-black/20 rounded-lg border border-primary/20 text-base sm:text-lg">
                           {summary}
                         </div>
-                        <p className="mt-6 font-bold text-lg sm:text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
+                        <p className="mt-6 text-center font-bold text-lg sm:text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
                     </ScrollArea>
                   </CardContent>
                   <CardFooter className="flex-shrink-0 pt-6">

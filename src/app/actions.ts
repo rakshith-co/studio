@@ -27,7 +27,7 @@ export async function submitSurvey(data: SurveySchema) {
       .filter(Boolean)
       .join(', ');
 
-    const likertQuestions = questionOnlyQuestions.filter(q => q.type !== 'header' && q.id.startsWith('dp_') || q.id.startsWith('ocb_') || q.id.startsWith('regret_'));
+    const likertQuestions = questionOnlyQuestions.filter(q => q.type !== 'header' && (q.id.startsWith('dp_') || q.id.startsWith('ocb_') || q.id.startsWith('regret_')));
     const responses = likertQuestions.map(q => {
       const answerValue = data[q.id as keyof SurveySchema];
       const questionText = q.text;
