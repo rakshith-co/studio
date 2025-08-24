@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Confetti } from './confetti';
 import { Logo } from './icons';
@@ -82,7 +82,7 @@ export function SurveyForm() {
   const { formState: { errors, isValid }, watch, trigger, getValues, handleSubmit } = methods;
 
   const currentQuestion = useMemo(() => questions[currentStep], [currentStep]);
-  const isLastQuestion = useMemo(() => currentStep === questions.length - 1, [currentStep]);
+  const isLastQuestion = useMemo(() => currentStep >= questions.length - 1, [currentStep]);
   
   const isQuestion = currentQuestion?.type !== 'header';
 
@@ -444,9 +444,14 @@ export function SurveyForm() {
           </div>
         ) : (
           summary && (
-            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="w-full h-full flex items-center justify-center">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              transition={{ duration: 0.5 }} 
+              className="w-full h-full flex items-center justify-center"
+            >
               {showConfetti && <Confetti />}
-              <Card className="bg-card/50 border-primary/50 backdrop-blur-lg max-w-2xl mx-auto text-center shadow-2xl shadow-primary/20 w-full max-h-[90vh] flex flex-col">
+              <Card className="relative z-10 bg-card/70 border-primary/50 backdrop-blur-lg max-w-2xl mx-auto text-center shadow-2xl shadow-primary/20 w-full max-h-[90vh] flex flex-col">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-3 text-3xl sm:text-4xl font-bold text-primary tracking-tighter">
                     <Sparkles className="w-8 h-8"/> Your Insights Report
@@ -454,15 +459,15 @@ export function SurveyForm() {
                   <CardDescription>Based on your survey responses.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 min-h-0">
-                   <ScrollArea className="h-full w-full">
-                    <div className="p-4">
-                      <p className="text-base sm:text-lg whitespace-pre-wrap font-medium p-4 bg-black/20 rounded-lg">{summary}</p>
+                   <ScrollArea className="h-full w-full pr-6">
+                      <div className="whitespace-pre-wrap text-left p-4 my-4 bg-black/20 rounded-lg border border-primary/20 text-base sm:text-lg">
+                        {summary}
+                      </div>
                       <p className="mt-6 font-bold text-lg sm:text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
-                    </div>
                   </ScrollArea>
                 </CardContent>
-                <div className="p-4 border-t border-primary/20">
-                  <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <CardFooter>
+                  <div className="flex flex-col sm:flex-row justify-center gap-4 w-full">
                       <Button onClick={() => window.location.reload()}>Start Over</Button>
                       <Button
                         variant="outline"
@@ -479,7 +484,7 @@ export function SurveyForm() {
                         Share on X
                       </Button>
                     </div>
-                </div>
+                </CardFooter>
               </Card>
             </motion.div>
           )
@@ -491,7 +496,7 @@ export function SurveyForm() {
 
   return (
     <main className="relative h-screen w-full bg-background overflow-hidden flex flex-col items-center justify-center">
-      <div className="absolute inset-0 -z-20">
+      <div className="absolute inset-0 z-0">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent"></div>
         <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse"></div>
         <div className="absolute bottom-[-30%] right-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse animation-delay-4000"></div>

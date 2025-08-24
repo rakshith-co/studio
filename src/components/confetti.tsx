@@ -27,5 +27,5 @@ export const Confetti = () => {
     setPieces(newPieces);
   }, []);
 
-  return <div className="absolute inset-0 z-50 pointer-events-none overflow-hidden">{pieces}</div>;
+  return <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">{pieces}</div>;
 };
