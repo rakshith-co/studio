@@ -126,6 +126,21 @@ export const questions: Question[] = [
     text: q,
     required: true,
   })),
+  {
+    id: 'regretHeader',
+    type: 'header',
+    text: "Alright {name}! Let's see if you regret your post-purchase.",
+  },
+  ...[
+    "I regret the purchase I made (e.g., buying items I didn't need just because they were delivered so quickly).",
+    "I feel sorry about the decision I made (e.g., I didn’t compare prices or quality before ordering).",
+    "I believe I should have chosen a different option instead (e.g., opting for pickup to save money).",
+  ].map((q, i) => ({
+    id: `regret_${i + 1}`,
+    type: 'likert' as const,
+    text: q,
+    required: true,
+  })),
 ];
 
 export const likertOptions: Option[] = [

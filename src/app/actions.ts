@@ -80,3 +80,4 @@ export async function submitSurvey(data: SurveySchema) {
     };
   }
 }
+
