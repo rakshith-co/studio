@@ -119,7 +119,10 @@ export function SurveyForm() {
       return;
     }
   
-    if (currentStep >= questions.length) return;
+    if (currentStep >= questions.length - 1) {
+      await methods.handleSubmit(onSubmit)();
+      return;
+    }
 
     let isValid = true;
     if (isQuestion && currentQuestion) {
@@ -383,7 +386,7 @@ export function SurveyForm() {
               )}
               <CardTitle className="text-lg sm:text-xl font-headline font-bold">{titleContent}</CardTitle>
             </CardHeader>
-            <CardContent className="py-8 flex flex-grow items-center justify-center px-4 sm:px-6">
+            <CardContent className="py-8 flex flex-grow items-start justify-center px-4 sm:px-6">
               {qIsQuestion ? renderInput(question) : (
                 isHeader && (
                   <Button
