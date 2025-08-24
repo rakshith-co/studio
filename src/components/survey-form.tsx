@@ -500,7 +500,7 @@ export function SurveyForm() {
           <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2">
             <div className="relative h-64 w-2 rounded-full overflow-hidden bg-primary/20">
               <motion.div
-                className="absolute bottom-0 w-full bg-primary"
+                className="absolute top-0 w-full bg-primary"
                 style={{ height: `${progress}%` }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
               />
@@ -555,7 +555,3 @@ export function SurveyForm() {
     </main>
   );
 }
-
-    
-
-    
