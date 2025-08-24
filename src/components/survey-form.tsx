@@ -451,7 +451,7 @@ export function SurveyForm() {
                   </CardTitle>
                   <CardDescription>Based on your survey responses.</CardDescription>
                 </CardHeader>
-                <CardContent className="flex-1 overflow-hidden">
+                <CardContent className="flex-1 min-h-0">
                   <ScrollArea className="h-full w-full">
                     <div className="p-4">
                       <p className="text-base sm:text-lg whitespace-pre-wrap font-medium p-4 bg-black/20 rounded-lg">{summary}</p>
@@ -511,7 +511,7 @@ export function SurveyForm() {
         
         <div className={cn(
           "flex-1 h-full flex flex-col items-center justify-center",
-          showProgress && "pl-12 pr-4"
+          showProgress && "pl-12 pr-4" 
         )}>
             <FormProvider {...methods}>
                 <form id={formId} onSubmit={handleSubmit(onSubmit)} className="h-full w-full max-w-lg">
