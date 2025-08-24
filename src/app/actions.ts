@@ -2,9 +2,10 @@
 'use server';
 
 import { summarizeSurveyResponses } from '@/ai/flows/summarize-survey-responses';
-import { questionOnlyQuestions, questions } from '@/lib/questions';
+import { questionOnlyQuestions } from '@/lib/questions';
 import type { SurveySchema } from '@/lib/schema';
 import { surveySchema } from '@/lib/schema';
+import { z } from 'zod';
 
 async function appendToGoogleSheet(data: Record<string, any>) {
   const SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL;
@@ -62,7 +63,7 @@ export async function submitSurvey(data: SurveySchema) {
     
     // Create a flat object of all form data for Google Sheets
     const allData = surveySchema.parse(data);
-    const flatData = {
+    const flatData: Record<string, any> = {
         Name: allData.name || '',
         Age: allData.age,
         Gender: allData.gender === 'other' ? allData.genderOther : allData.gender,
@@ -76,7 +77,7 @@ export async function submitSurvey(data: SurveySchema) {
         // Use question text as header, data key as value
         const key = q.text;
         const value = (allData as any)[q.id];
-        (flatData as any)[key] = value;
+        flatData[key] = value;
       }
     });
 
