@@ -83,7 +83,7 @@ export function SurveyForm() {
 
   const currentQuestion = useMemo(() => questions[currentStep], [currentStep]);
   const isLastQuestion = useMemo(() => currentStep === questions.length - 1, [currentStep]);
-
+  
   const isQuestion = currentQuestion?.type !== 'header';
 
   const progress = useMemo(() => {
@@ -126,21 +126,21 @@ export function SurveyForm() {
     }
   }, [progress, summary]);
 
-  const onSubmit = async (data: SurveySchema) => {
+  const onSubmit = useCallback(async (data: SurveySchema) => {
     setIsSubmitting(true);
     const result = await submitSurvey(data);
-    if (result.success) {
+    if (result && result.success) {
       setSummary(result.summary);
       setShowConfetti(true);
     } else {
       toast({
         variant: 'destructive',
         title: 'Submission Failed',
-        description: result.error,
+        description: result?.error || 'An unknown error occurred.',
       });
     }
     setIsSubmitting(false);
-  };
+  }, [toast]);
   
   const handleNext = useCallback(async () => {
     if (isIntro) {
@@ -171,7 +171,7 @@ export function SurveyForm() {
         setCurrentStep(prev => prev + 1);
       }
     }
-  }, [isIntro, currentStep, isQuestion, currentQuestion, trigger, getValues, handleSubmit, isLastQuestion]);
+  }, [isIntro, currentStep, isQuestion, currentQuestion, trigger, getValues, handleSubmit, isLastQuestion, onSubmit]);
 
   const handlePrev = useCallback(() => {
     if (isIntro) return;
@@ -187,14 +187,16 @@ export function SurveyForm() {
     const watchedValue = watch(fieldName);
 
     const handleLikertOrRadioNext = async () => {
-      setTimeout(() => {
-        if (isLastQuestion) {
-          handleSubmit(onSubmit)();
-        } else {
-          handleNext();
-        }
-      }, 100);
-    };
+        // We need a brief timeout to allow react-hook-form to register the value change
+        // before we trigger the next step, which might involve validation.
+        setTimeout(() => {
+          if (isLastQuestion) {
+            handleSubmit(onSubmit)();
+          } else {
+            handleNext();
+          }
+        }, 50); 
+      };
     
     switch (question.type) {
       case 'text':
@@ -291,7 +293,7 @@ export function SurveyForm() {
       default:
         return null;
     }
-  }, [watch, handleNext, methods, isLastQuestion, handleSubmit]);
+  }, [watch, handleNext, methods, isLastQuestion, handleSubmit, onSubmit]);
 
   const renderIntro = useCallback(() => (
     <div id="step--1" className="h-full w-full flex flex-col justify-center items-center text-center p-4">
@@ -452,7 +454,7 @@ export function SurveyForm() {
                   <CardDescription>Based on your survey responses.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 min-h-0">
-                  <ScrollArea className="h-full w-full">
+                   <ScrollArea className="h-full w-full">
                     <div className="p-4">
                       <p className="text-base sm:text-lg whitespace-pre-wrap font-medium p-4 bg-black/20 rounded-lg">{summary}</p>
                       <p className="mt-6 font-bold text-lg sm:text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
