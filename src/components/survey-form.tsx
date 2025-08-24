@@ -118,7 +118,7 @@ export function SurveyForm() {
 
 
   useEffect(() => {
-    if (progress === 100 && summary) {
+    if (progress === 50 || progress === 100 && !summary) {
       setShowConfetti(true);
       const timer = setTimeout(() => setShowConfetti(false), 5000);
       return () => clearTimeout(timer);
@@ -170,7 +170,7 @@ export function SurveyForm() {
         setCurrentStep(prev => prev + 1);
       }
     }
-  }, [isIntro, currentStep, isQuestion, currentQuestion, trigger, getValues, handleSubmit, isLastQuestion]);
+  }, [isIntro, currentStep, isQuestion, currentQuestion, trigger, getValues, handleSubmit, isLastQuestion, isLastQuestion]);
 
   const handlePrev = useCallback(() => {
     if (isIntro) return;
@@ -290,7 +290,7 @@ export function SurveyForm() {
       default:
         return null;
     }
-  }, [watch, handleNext, methods, currentStep, isLastQuestion, handleSubmit]);
+  }, [watch, handleNext, methods, currentStep, isLastQuestion, handleSubmit, isLastQuestion]);
 
   const renderIntro = useCallback(() => (
     <div id="step--1" className="h-full w-full flex flex-col justify-center items-center text-center p-4">
@@ -479,53 +479,55 @@ export function SurveyForm() {
   ), [isSubmitting, summary, showConfetti]);
 
   return (
-    <main className="relative h-screen w-full bg-background overflow-hidden flex items-center justify-center">
+    <main className="relative h-screen w-full bg-background overflow-hidden flex flex-col items-center justify-center">
       <div className="absolute inset-0 -z-20">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 via-transparent to-transparent"></div>
         <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse"></div>
         <div className="absolute bottom-[-30%] right-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse animation-delay-4000"></div>
       </div>
-      
-      <div className="relative w-full h-full flex items-center justify-center pl-12">
+
+      <div className="relative w-full h-full flex items-center">
         {!isIntro && !summary && !isSubmitting && (
           <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2">
-              <div className="relative h-64 w-2 rounded-full overflow-hidden bg-primary/20">
-                  <motion.div 
-                    className="absolute bottom-0 w-full bg-primary" 
-                    style={{ height: `${progress}%`}}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
-                  />
-              </div>
-              <span className="text-xs font-bold text-primary">{Math.round(progress)}%</span>
+            <div className="relative h-64 w-2 rounded-full overflow-hidden bg-primary/20">
+              <motion.div
+                className="absolute bottom-0 w-full bg-primary"
+                style={{ height: `${progress}%` }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+              />
+            </div>
+            <span className="text-xs font-bold text-primary">{Math.round(progress)}%</span>
           </div>
         )}
         
-        <FormProvider {...methods}>
-          <form id={formId} onSubmit={handleSubmit(onSubmit)} className="h-full w-full max-w-lg">
-            <div ref={mainContainerRef} className="h-full w-full overflow-hidden">
-               <AnimatePresence mode="wait">
-                  <motion.div
-                      key={isIntro ? 'intro' : summary ? 'summary' : currentStep}
-                      initial={{ opacity: 0, y: 50 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -50 }}
-                      transition={{ duration: 0.5, ease: 'easeInOut' }}
-                      className="h-full w-full flex-shrink-0"
-                  >
-                      <ActiveScreen 
-                        isIntro={isIntro}
-                        summary={summary}
-                        isSubmitting={isSubmitting}
-                        currentStep={currentStep}
-                        renderIntro={renderIntro}
-                        renderSummary={renderSummary}
-                        renderQuestion={renderQuestion}
-                      />
-                  </motion.div>
-              </AnimatePresence>
-            </div>
-          </form>
-        </FormProvider>
+        <div className="flex-1 h-full flex flex-col items-center justify-center">
+            <FormProvider {...methods}>
+                <form id={formId} onSubmit={handleSubmit(onSubmit)} className="h-full w-full max-w-lg">
+                    <div ref={mainContainerRef} className="h-full w-full overflow-hidden">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={isIntro ? 'intro' : summary ? 'summary' : currentStep}
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -50 }}
+                            transition={{ duration: 0.5, ease: 'easeInOut' }}
+                            className="h-full w-full flex-shrink-0"
+                        >
+                            <ActiveScreen 
+                                isIntro={isIntro}
+                                summary={summary}
+                                isSubmitting={isSubmitting}
+                                currentStep={currentStep}
+                                renderIntro={renderIntro}
+                                renderSummary={renderSummary}
+                                renderQuestion={renderQuestion}
+                            />
+                        </motion.div>
+                    </AnimatePresence>
+                    </div>
+                </form>
+            </FormProvider>
+        </div>
 
         {!isIntro && !summary && !isSubmitting && (
           <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2">
@@ -541,5 +543,3 @@ export function SurveyForm() {
     </main>
   );
 }
-
-    
