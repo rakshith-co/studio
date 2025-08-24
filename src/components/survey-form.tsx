@@ -170,7 +170,7 @@ export function SurveyForm() {
         setCurrentStep(prev => prev + 1);
       }
     }
-  }, [isIntro, currentStep, isQuestion, currentQuestion, trigger, getValues, handleSubmit, isLastQuestion, isLastQuestion]);
+  }, [isIntro, currentStep, isQuestion, currentQuestion, trigger, getValues, handleSubmit, isLastQuestion]);
 
   const handlePrev = useCallback(() => {
     if (isIntro) return;
@@ -290,7 +290,7 @@ export function SurveyForm() {
       default:
         return null;
     }
-  }, [watch, handleNext, methods, currentStep, isLastQuestion, handleSubmit, isLastQuestion]);
+  }, [watch, handleNext, methods, isLastQuestion, handleSubmit]);
 
   const renderIntro = useCallback(() => (
     <div id="step--1" className="h-full w-full flex flex-col justify-center items-center text-center p-4">
@@ -478,6 +478,8 @@ export function SurveyForm() {
     </div>
   ), [isSubmitting, summary, showConfetti]);
 
+  const showProgress = !isIntro && !summary && !isSubmitting;
+
   return (
     <main className="relative h-screen w-full bg-background overflow-hidden flex flex-col items-center justify-center">
       <div className="absolute inset-0 -z-20">
@@ -487,7 +489,7 @@ export function SurveyForm() {
       </div>
 
       <div className="relative w-full h-full flex items-center">
-        {!isIntro && !summary && !isSubmitting && (
+        {showProgress && (
           <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2">
             <div className="relative h-64 w-2 rounded-full overflow-hidden bg-primary/20">
               <motion.div
@@ -500,7 +502,10 @@ export function SurveyForm() {
           </div>
         )}
         
-        <div className="flex-1 h-full flex flex-col items-center justify-center">
+        <div className={cn(
+          "flex-1 h-full flex flex-col items-center justify-center",
+          showProgress && "pl-12 pr-4"
+        )}>
             <FormProvider {...methods}>
                 <form id={formId} onSubmit={handleSubmit(onSubmit)} className="h-full w-full max-w-lg">
                     <div ref={mainContainerRef} className="h-full w-full overflow-hidden">
@@ -529,7 +534,7 @@ export function SurveyForm() {
             </FormProvider>
         </div>
 
-        {!isIntro && !summary && !isSubmitting && (
+        {showProgress && (
           <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2">
               <Button type="button" variant="ghost" onClick={handlePrev} disabled={isIntro || currentStep === 0}>
                 <ArrowUp className="h-5 w-5" />
@@ -543,3 +548,5 @@ export function SurveyForm() {
     </main>
   );
 }
+
+    
