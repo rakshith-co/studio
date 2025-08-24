@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ArrowUp, ArrowDown, BarChart, CheckCircle, Clock, FileText, Loader, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowDown, BarChart, CheckCircle, Clock, FileText, Loader, Sparkles, RefreshCcw } from 'lucide-react';
 import React from 'react';
 
 import { questions, questionOnlyQuestions, likertOptions, type Question } from '@/lib/questions';
@@ -156,6 +156,7 @@ export function SurveyForm() {
             description: 'An unexpected error occurred while submitting.',
         });
     } finally {
+        // Only set submitting to false if we haven't successfully gotten a summary
         if (!summary) {
             setIsSubmitting(false);
         }
@@ -168,12 +169,7 @@ export function SurveyForm() {
       setCurrentStep(0);
       return;
     }
-
-    if (isLastQuestion) {
-        handleSubmit(onSubmit)();
-        return;
-    }
-  
+    
     let fieldIsValid = true;
     if (isQuestion && currentQuestion) {
       fieldIsValid = await trigger(currentQuestion.id as keyof SurveySchema);
@@ -187,6 +183,10 @@ export function SurveyForm() {
     }
     
     if (fieldIsValid) {
+       if (isLastQuestion) {
+          handleSubmit(onSubmit)();
+          return;
+      }
       if (currentStep < questions.length - 1) {
         setCurrentStep(prev => prev + 1);
       }
@@ -471,28 +471,16 @@ export function SurveyForm() {
             className="w-full h-full flex items-center justify-center"
           >
             <Card className="relative z-10 bg-card/80 border-primary/50 backdrop-blur-xl max-w-2xl mx-auto shadow-2xl shadow-primary/20 w-full max-h-[90vh] flex flex-col">
-              <CardHeader className="flex-shrink-0 text-center border-b border-primary/20">
-                <CardTitle className="flex items-center justify-center gap-3 text-3xl sm:text-4xl font-bold text-primary tracking-tighter">
-                  <Sparkles className="w-8 h-8"/> Your Insights Report
-                </CardTitle>
-                <CardDescription>Based on your survey responses.</CardDescription>
-              </CardHeader>
-              
-              <CardContent className="flex-1 min-h-0 py-4">
-                 <ScrollArea className="h-full w-full pr-4">
-                    <div className="whitespace-pre-wrap text-left p-4 bg-black/20 rounded-lg border border-primary/20 text-base sm:text-lg">
-                      {summary}
-                    </div>
-                    <p className="mt-6 text-center font-bold text-lg sm:text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
-                </ScrollArea>
-              </CardContent>
-
-              <CardFooter className="flex-shrink-0 pt-4 border-t border-primary/20">
-                <div className="flex flex-col sm:flex-row justify-center gap-4 w-full">
-                    <Button onClick={() => window.location.reload()}>Start Over</Button>
+              <CardHeader className="relative flex-shrink-0 text-center border-b border-primary/20 pb-4">
+                 <div className="absolute top-4 right-4 flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => window.location.reload()}>
+                      <RefreshCcw className="h-4 w-4" />
+                      <span className="sr-only">Start Over</span>
+                    </Button>
                     <Button
-                      variant="outline"
-                      className="bg-transparent border-2 border-sky-500 text-sky-400 hover:bg-sky-500 hover:text-white"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full"
                       onClick={() => {
                         const shareText = `I just uncovered my online shopping habits with Q-Commerce Insights! Get your own analysis. #QCommerceInsights`;
                         const shareUrl = new URL('https://twitter.com/intent/tweet');
@@ -501,11 +489,25 @@ export function SurveyForm() {
                         window.open(shareUrl.toString(), '_blank');
                       }}
                     >
-                      <XIcon className="mr-2 h-4 w-4 fill-current" />
-                      Share on X
+                      <XIcon className="h-4 w-4 fill-current" />
+                      <span className="sr-only">Share on X</span>
                     </Button>
                   </div>
-              </CardFooter>
+                <CardTitle className="flex items-center justify-center gap-3 text-3xl sm:text-4xl font-bold text-primary tracking-tighter pt-8">
+                  <Sparkles className="w-8 h-8"/> Your Insights Report
+                </CardTitle>
+                <CardDescription>Based on your survey responses.</CardDescription>
+              </CardHeader>
+              
+              <CardContent className="flex-1 min-h-0 py-6">
+                 <ScrollArea className="h-full w-full pr-4">
+                    <div className="whitespace-pre-wrap text-left p-4 bg-black/20 rounded-lg border border-primary/20 text-base sm:text-lg">
+                      {summary}
+                    </div>
+                    <p className="mt-6 text-center font-bold text-lg sm:text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
+                </ScrollArea>
+              </CardContent>
+
             </Card>
           </motion.div>
         )}
@@ -582,3 +584,5 @@ export function SurveyForm() {
     </main>
   );
 }
+
+    
