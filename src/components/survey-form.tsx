@@ -143,7 +143,6 @@ export function SurveyForm() {
                 title: 'Submission Failed',
                 description: result?.error || 'An unknown error occurred.',
             });
-            setIsSubmitting(false); // <-- Reset loading on failure
         }
     } catch (error) {
         toast({
@@ -151,10 +150,15 @@ export function SurveyForm() {
             title: 'Submission Error',
             description: 'An unexpected error occurred while submitting.',
         });
-        setIsSubmitting(false); // <-- Reset loading on error
-    } 
-    // `finally` is removed because we only want to stop submitting when there is a success
-  }, [toast]);
+    } finally {
+        // We only want to stop submitting if there is a summary.
+        // If there's a failure, the user is still on the form and might want to retry.
+        // But if we get here from an error, we should stop loading.
+        if (!summary) {
+            setIsSubmitting(false);
+        }
+    }
+  }, [toast, summary]);
   
   const handleNext = useCallback(async () => {
     if (isIntro) {

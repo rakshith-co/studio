@@ -30,7 +30,7 @@ export async function submitSurvey(data: SurveySchema) {
     const likertQuestions = questionOnlyQuestions.filter(q => q.type !== 'header' && (q.id.startsWith('dp_') || q.id.startsWith('ocb_') || q.id.startsWith('regret_')));
     const responses = likertQuestions.map(q => {
       const answerValue = data[q.id as keyof SurveySchema];
-      const questionText = q.text;
+      const questionText = q.text; // The question text comes directly from the question object `q`.
       return `${questionText} - Response: ${answerValue}`;
     });
 
