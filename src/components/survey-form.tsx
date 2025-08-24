@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ArrowUp, ArrowDown, BarChart, CheckCircle, Clock, FileText, Loader, Sparkles, Twitter } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowDown, BarChart, CheckCircle, Clock, FileText, Loader, Sparkles, X } from 'lucide-react';
 import React from 'react';
 
 import { questions, questionOnlyQuestions, likertOptions, type Question } from '@/lib/questions';
@@ -136,14 +136,16 @@ export function SurveyForm() {
     }
 
     if (currentStep >= questions.length - 1) {
-      if (isValid) {
-        await methods.handleSubmit(onSubmit)();
-      } else {
-         // This will show validation errors if any field is invalid on submit attempt
-         const allFields = questionOnlyQuestions.map(q => q.id as keyof SurveySchema);
-         await trigger(allFields);
-      }
-      return;
+        // Use a timeout to ensure the last value is registered before submitting
+        setTimeout(() => {
+            if (methods.formState.isValid) {
+                methods.handleSubmit(onSubmit)();
+            } else {
+                const allFields = questionOnlyQuestions.map(q => q.id as keyof SurveySchema);
+                trigger(allFields);
+            }
+        }, 100);
+        return;
     }
   
     let fieldIsValid = true;
@@ -163,7 +165,7 @@ export function SurveyForm() {
         setCurrentStep(prev => prev + 1);
       }
     }
-  }, [isIntro, currentStep, isQuestion, currentQuestion, trigger, getValues, methods, isValid]);
+  }, [isIntro, currentStep, isQuestion, currentQuestion, trigger, getValues, methods]);
 
   const handlePrev = useCallback(() => {
     if (isIntro) return;
@@ -390,9 +392,13 @@ export function SurveyForm() {
               <CardTitle className="text-lg sm:text-xl font-headline font-bold">{titleContent}</CardTitle>
             </CardHeader>
             <CardContent className="py-6 px-4 sm:px-6">
-              <div className="flex justify-center items-center w-full">
-                {qIsQuestion ? renderInput(question) : (
+                {qIsQuestion ? (
+                  <div className="flex justify-center items-center w-full">
+                    {renderInput(question)}
+                  </div>
+                ) : (
                   isHeader && (
+                    <div className="flex justify-center items-center">
                     <Button
                       variant="default"
                       size="icon"
@@ -407,9 +413,9 @@ export function SurveyForm() {
                         <ArrowDown className="w-8 h-8 text-primary-foreground" />
                       </motion.div>
                     </Button>
+                    </div>
                   )
                 )}
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -445,12 +451,13 @@ export function SurveyForm() {
                       variant="outline"
                       className="bg-transparent border-2 border-sky-500 text-sky-400 hover:bg-sky-500 hover:text-white"
                       onClick={() => {
-                        const text = `I just uncovered my online shopping habits with Q-Commerce Insights! Get your own analysis. #QCommerceInsights`;
-                        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-                        window.open(url, '_blank');
+                        const shareText = `I just uncovered my online shopping habits with Q-Commerce Insights! Get your own analysis. #QCommerceInsights`;
+                        const imageUrl = `https://placehold.co/600x400.png?text=My+Q-Commerce+Insights`;
+                        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(imageUrl)}`;
+                        window.open(twitterUrl, '_blank');
                       }}
                     >
-                      <Twitter className="mr-2 h-4 w-4" />
+                      <X className="mr-2 h-4 w-4 fill-current" />
                       Share on X
                     </Button>
                   </div>
@@ -494,7 +501,7 @@ export function SurveyForm() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -50 }}
                       transition={{ duration: 0.5, ease: 'easeInOut' }}
-                      className="h-full w-full flex-shrink-0 flex items-center justify-center"
+                      className="h-full w-full flex-shrink-0"
                   >
                       <ActiveScreen 
                         isIntro={isIntro}
