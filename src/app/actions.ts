@@ -17,20 +17,17 @@ async function appendToGoogleSheet(data: Record<string, any>) {
   try {
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
-      // The Google Apps Script is not a CORS-enabled endpoint.
-      // We must use 'no-cors' mode to avoid a CORS error in the browser.
-      // In 'no-cors' mode, we can't see the response, but the request will go through.
-      mode: 'no-cors', 
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
     });
 
-    // In 'no-cors' mode, we can't access the response properties.
-    // We have to assume it was successful if no network error was thrown.
-    // console.log("Data sent to Google Sheet.");
-
+    // Since the Apps Script returns a success/error JSON, we can check it.
+    const result = await response.json();
+    if (result.result !== 'success') {
+       console.error("Error writing to Google Sheet:", result.message);
+    }
   } catch (error) {
     console.error("Fetch error when writing to Google Sheet:", error);
   }
@@ -62,7 +59,6 @@ export async function submitSurvey(data: SurveySchema) {
 
     const summaryPromise = summarizeSurveyResponses({ demographics, responses });
     
-    // Create a flat object of all form data for Google Sheets
     const allData = surveySchema.parse(data);
     const flatData: Record<string, any> = {
         Timestamp: new Date().toISOString(),
@@ -76,14 +72,12 @@ export async function submitSurvey(data: SurveySchema) {
 
     questionOnlyQuestions.forEach(q => {
       if (q.type !== 'header') {
-        const key = q.text; // Use question text as the key (column header)
+        const key = q.text;
         const value = (allData as any)[q.id];
         flatData[key] = value;
       }
     });
 
-    // Don't wait for the Google Sheets promise to resolve.
-    // Fire and forget to avoid delaying the UI response.
     appendToGoogleSheet(flatData);
 
     const summaryResult = await summaryPromise;
