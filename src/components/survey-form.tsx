@@ -21,6 +21,7 @@ import { Confetti } from './confetti';
 import { Logo } from './icons';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formId = 'q-commerce-survey-form';
 
@@ -441,36 +442,42 @@ export function SurveyForm() {
           </div>
         ) : (
           summary && (
-            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="w-full">
+            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="w-full h-full flex items-center justify-center">
               {showConfetti && <Confetti />}
-              <Card className="bg-card/50 border-primary/50 backdrop-blur-lg max-w-2xl mx-auto text-center shadow-2xl shadow-primary/20">
+              <Card className="bg-card/50 border-primary/50 backdrop-blur-lg max-w-2xl mx-auto text-center shadow-2xl shadow-primary/20 w-full max-h-[90vh] flex flex-col">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-3 text-3xl sm:text-4xl font-bold text-primary tracking-tighter">
                     <Sparkles className="w-8 h-8"/> Your Insights Report
                   </CardTitle>
                   <CardDescription>Based on your survey responses.</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-base sm:text-lg whitespace-pre-wrap font-medium p-4 bg-black/20 rounded-lg">{summary}</p>
-                  <p className="mt-6 font-bold text-lg sm:text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
-                  <div className="mt-6 flex flex-col sm:flex-row justify-center gap-4">
-                    <Button onClick={() => window.location.reload()}>Start Over</Button>
-                    <Button
-                      variant="outline"
-                      className="bg-transparent border-2 border-sky-500 text-sky-400 hover:bg-sky-500 hover:text-white"
-                      onClick={() => {
-                        const shareText = `I just uncovered my online shopping habits with Q-Commerce Insights! Get your own analysis. #QCommerceInsights`;
-                        const shareUrl = new URL('https://twitter.com/intent/tweet');
-                        shareUrl.searchParams.set('text', shareText);
-                        shareUrl.searchParams.set('url', 'https://q-commerce-insights.web.app/'); // Replace with your actual app URL for the card to work
-                        window.open(shareUrl.toString(), '_blank');
-                      }}
-                    >
-                      <XIcon className="mr-2 h-4 w-4 fill-current" />
-                      Share on X
-                    </Button>
-                  </div>
+                <CardContent className="flex-1 overflow-hidden">
+                  <ScrollArea className="h-full w-full">
+                    <div className="p-4">
+                      <p className="text-base sm:text-lg whitespace-pre-wrap font-medium p-4 bg-black/20 rounded-lg">{summary}</p>
+                      <p className="mt-6 font-bold text-lg sm:text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
+                    </div>
+                  </ScrollArea>
                 </CardContent>
+                <div className="p-4 border-t border-primary/20">
+                  <div className="flex flex-col sm:flex-row justify-center gap-4">
+                      <Button onClick={() => window.location.reload()}>Start Over</Button>
+                      <Button
+                        variant="outline"
+                        className="bg-transparent border-2 border-sky-500 text-sky-400 hover:bg-sky-500 hover:text-white"
+                        onClick={() => {
+                          const shareText = `I just uncovered my online shopping habits with Q-Commerce Insights! Get your own analysis. #QCommerceInsights`;
+                          const shareUrl = new URL('https://twitter.com/intent/tweet');
+                          shareUrl.searchParams.set('text', shareText);
+                          shareUrl.searchParams.set('url', 'https://q-commerce-insights.web.app/'); // Replace with your actual app URL for the card to work
+                          window.open(shareUrl.toString(), '_blank');
+                        }}
+                      >
+                        <XIcon className="mr-2 h-4 w-4 fill-current" />
+                        Share on X
+                      </Button>
+                    </div>
+                </div>
               </Card>
             </motion.div>
           )
@@ -548,5 +555,7 @@ export function SurveyForm() {
     </main>
   );
 }
+
+    
 
     
