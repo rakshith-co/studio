@@ -30,7 +30,9 @@ const prompt = ai.definePrompt({
   name: 'summarizeSurveyResponsesPrompt',
   input: {schema: SummarizeSurveyResponsesInputSchema},
   output: {schema: SummarizeSurveyResponsesOutputSchema},
-  prompt: `You are an AI assistant that summarizes survey responses and provides a personalized short summary of the user's overall sentiment and key takeaways. 
+  prompt: `You are an AI assistant that summarizes survey responses. Based on the user's answers, provide a personalized and concise summary of their overall sentiment and key takeaways. 
+
+  The summary must be a single, well-written paragraph. Do not use more than one paragraph.
 
   Demographics: {{{demographics}}}
 
@@ -38,8 +40,6 @@ const prompt = ai.definePrompt({
   {{#each responses}}
   {{@index}}. {{{this}}}
   {{/each}}
-
-  Provide a concise and visually appealing summary as if it were a streaming recommendation screen.
   `,
 });
 

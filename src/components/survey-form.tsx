@@ -82,7 +82,11 @@ export function SurveyForm() {
   const { formState: { errors, isValid }, watch, trigger, getValues, handleSubmit } = methods;
 
   const currentQuestion = useMemo(() => questions[currentStep], [currentStep]);
-  const isLastQuestion = useMemo(() => currentStep >= questions.length - 1, [currentStep]);
+  const isLastQuestion = useMemo(() => {
+    if (!currentQuestion || currentQuestion.type === 'header') return false;
+    const lastQId = questionOnlyQuestions[questionOnlyQuestions.length - 1].id;
+    return currentQuestion.id === lastQId;
+  }, [currentQuestion]);
   
   const isQuestion = currentQuestion?.type !== 'header';
 
@@ -128,18 +132,27 @@ export function SurveyForm() {
 
   const onSubmit = useCallback(async (data: SurveySchema) => {
     setIsSubmitting(true);
-    const result = await submitSurvey(data);
-    if (result && result.success) {
-      setSummary(result.summary);
-      setShowConfetti(true);
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Submission Failed',
-        description: result?.error || 'An unknown error occurred.',
-      });
+    try {
+        const result = await submitSurvey(data);
+        if (result && result.success) {
+            setSummary(result.summary);
+            setShowConfetti(true);
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Submission Failed',
+                description: result?.error || 'An unknown error occurred.',
+            });
+        }
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Submission Error',
+            description: 'An unexpected error occurred while submitting.',
+        });
+    } finally {
+        setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   }, [toast]);
   
   const handleNext = useCallback(async () => {
@@ -187,8 +200,6 @@ export function SurveyForm() {
     const watchedValue = watch(fieldName);
 
     const handleLikertOrRadioNext = async () => {
-        // We need a brief timeout to allow react-hook-form to register the value change
-        // before we trigger the next step, which might involve validation.
         setTimeout(() => {
           if (isLastQuestion) {
             handleSubmit(onSubmit)();
@@ -444,49 +455,51 @@ export function SurveyForm() {
           </div>
         ) : (
           summary && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.8 }} 
-              animate={{ opacity: 1, scale: 1 }} 
-              transition={{ duration: 0.5 }} 
-              className="w-full h-full flex items-center justify-center"
-            >
+            <>
               {showConfetti && <Confetti />}
-              <Card className="relative z-10 bg-card/70 border-primary/50 backdrop-blur-lg max-w-2xl mx-auto text-center shadow-2xl shadow-primary/20 w-full max-h-[90vh] flex flex-col">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-center gap-3 text-3xl sm:text-4xl font-bold text-primary tracking-tighter">
-                    <Sparkles className="w-8 h-8"/> Your Insights Report
-                  </CardTitle>
-                  <CardDescription>Based on your survey responses.</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1 min-h-0">
-                   <ScrollArea className="h-full w-full pr-6">
-                      <div className="whitespace-pre-wrap text-left p-4 my-4 bg-black/20 rounded-lg border border-primary/20 text-base sm:text-lg">
-                        {summary}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }} 
+                animate={{ opacity: 1, scale: 1 }} 
+                transition={{ duration: 0.5 }} 
+                className="w-full h-full flex items-center justify-center"
+              >
+                <Card className="relative z-10 bg-card/70 border-primary/50 backdrop-blur-lg max-w-2xl mx-auto shadow-2xl shadow-primary/20 w-full max-h-[90vh] flex flex-col">
+                  <CardHeader className="flex-shrink-0">
+                    <CardTitle className="flex items-center justify-center gap-3 text-3xl sm:text-4xl font-bold text-primary tracking-tighter">
+                      <Sparkles className="w-8 h-8"/> Your Insights Report
+                    </CardTitle>
+                    <CardDescription>Based on your survey responses.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1 min-h-0 py-0">
+                     <ScrollArea className="h-full w-full pr-6">
+                        <div className="whitespace-pre-wrap text-left p-4 my-4 bg-black/20 rounded-lg border border-primary/20 text-base sm:text-lg">
+                          {summary}
+                        </div>
+                        <p className="mt-6 font-bold text-lg sm:text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
+                    </ScrollArea>
+                  </CardContent>
+                  <CardFooter className="flex-shrink-0 pt-6">
+                    <div className="flex flex-col sm:flex-row justify-center gap-4 w-full">
+                        <Button onClick={() => window.location.reload()}>Start Over</Button>
+                        <Button
+                          variant="outline"
+                          className="bg-transparent border-2 border-sky-500 text-sky-400 hover:bg-sky-500 hover:text-white"
+                          onClick={() => {
+                            const shareText = `I just uncovered my online shopping habits with Q-Commerce Insights! Get your own analysis. #QCommerceInsights`;
+                            const shareUrl = new URL('https://twitter.com/intent/tweet');
+                            shareUrl.searchParams.set('text', shareText);
+                            shareUrl.searchParams.set('url', 'https://q-commerce-insights.web.app/'); // Replace with your actual app URL for the card to work
+                            window.open(shareUrl.toString(), '_blank');
+                          }}
+                        >
+                          <XIcon className="mr-2 h-4 w-4 fill-current" />
+                          Share on X
+                        </Button>
                       </div>
-                      <p className="mt-6 font-bold text-lg sm:text-xl flex items-center justify-center gap-2"><CheckCircle className="text-green-500"/>Thank you for your valuable insights!</p>
-                  </ScrollArea>
-                </CardContent>
-                <CardFooter>
-                  <div className="flex flex-col sm:flex-row justify-center gap-4 w-full">
-                      <Button onClick={() => window.location.reload()}>Start Over</Button>
-                      <Button
-                        variant="outline"
-                        className="bg-transparent border-2 border-sky-500 text-sky-400 hover:bg-sky-500 hover:text-white"
-                        onClick={() => {
-                          const shareText = `I just uncovered my online shopping habits with Q-Commerce Insights! Get your own analysis. #QCommerceInsights`;
-                          const shareUrl = new URL('https://twitter.com/intent/tweet');
-                          shareUrl.searchParams.set('text', shareText);
-                          shareUrl.searchParams.set('url', 'https://q-commerce-insights.web.app/'); // Replace with your actual app URL for the card to work
-                          window.open(shareUrl.toString(), '_blank');
-                        }}
-                      >
-                        <XIcon className="mr-2 h-4 w-4 fill-current" />
-                        Share on X
-                      </Button>
-                    </div>
-                </CardFooter>
-              </Card>
-            </motion.div>
+                  </CardFooter>
+                </Card>
+              </motion.div>
+            </>
           )
         )}
     </div>
