@@ -78,9 +78,10 @@ export function SurveyForm() {
     mode: 'onChange',
   });
 
-  const { formState: { errors, isValid }, watch, trigger, getValues } = methods;
+  const { formState: { errors, isValid }, watch, trigger, getValues, handleSubmit } = methods;
 
   const currentQuestion = useMemo(() => questions[currentStep], [currentStep]);
+  const isLastQuestion = useMemo(() => currentStep === questions.length - 1, [currentStep]);
 
   const isQuestion = currentQuestion?.type !== 'header';
 
@@ -105,11 +106,10 @@ export function SurveyForm() {
 
     if (questionIndex < 0) return 0;
     
-    // Check if it's the last question and the answer is filled.
-    const isLastQuestion = questionIndex === questionOnlyQuestions.length - 1;
+    const isLastFormQuestion = questionIndex === questionOnlyQuestions.length - 1;
     const lastQuestionId = questionOnlyQuestions[questionOnlyQuestions.length - 1].id;
     const lastQuestionValue = getValues(lastQuestionId as keyof SurveySchema);
-    if(isLastQuestion && lastQuestionValue) {
+    if(isLastFormQuestion && lastQuestionValue) {
       return 100;
     }
 
@@ -148,16 +148,8 @@ export function SurveyForm() {
       return;
     }
 
-    if (currentStep >= questions.length - 1) {
-        // Use a timeout to ensure the last value is registered before submitting
-        setTimeout(() => {
-            if (methods.formState.isValid) {
-                methods.handleSubmit(onSubmit)();
-            } else {
-                const allFields = questionOnlyQuestions.map(q => q.id as keyof SurveySchema);
-                trigger(allFields);
-            }
-        }, 100);
+    if (isLastQuestion) {
+        handleSubmit(onSubmit)();
         return;
     }
   
@@ -178,7 +170,7 @@ export function SurveyForm() {
         setCurrentStep(prev => prev + 1);
       }
     }
-  }, [isIntro, currentStep, isQuestion, currentQuestion, trigger, getValues, methods]);
+  }, [isIntro, currentStep, isQuestion, currentQuestion, trigger, getValues, handleSubmit, isLastQuestion]);
 
   const handlePrev = useCallback(() => {
     if (isIntro) return;
@@ -194,10 +186,13 @@ export function SurveyForm() {
     const watchedValue = watch(fieldName);
 
     const handleLikertOrRadioNext = async () => {
-      // Use a timeout to allow the UI to update before moving to the next question
-      // or submitting. This prevents a race condition where the submission is
-      // triggered before the form state is updated with the last answer.
-      setTimeout(handleNext, 100);
+      setTimeout(() => {
+        if (isLastQuestion) {
+          handleSubmit(onSubmit)();
+        } else {
+          handleNext();
+        }
+      }, 100);
     };
     
     switch (question.type) {
@@ -295,7 +290,7 @@ export function SurveyForm() {
       default:
         return null;
     }
-  }, [watch, handleNext, methods, currentStep]);
+  }, [watch, handleNext, methods, currentStep, isLastQuestion, handleSubmit]);
 
   const renderIntro = useCallback(() => (
     <div id="step--1" className="h-full w-full flex flex-col justify-center items-center text-center p-4">
@@ -506,7 +501,7 @@ export function SurveyForm() {
         )}
         
         <FormProvider {...methods}>
-          <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full w-full max-w-lg">
+          <form id={formId} onSubmit={handleSubmit(onSubmit)} className="h-full w-full max-w-lg">
             <div ref={mainContainerRef} className="h-full w-full overflow-hidden">
                <AnimatePresence mode="wait">
                   <motion.div
@@ -537,7 +532,7 @@ export function SurveyForm() {
               <Button type="button" variant="ghost" onClick={handlePrev} disabled={isIntro || currentStep === 0}>
                 <ArrowUp className="h-5 w-5" />
               </Button>
-              <Button type="button" variant="ghost" onClick={handleNext} disabled={!!currentQuestion && (currentQuestion.type === 'likert' || currentQuestion.type === 'radio' || (currentQuestion.type === 'radio-other' && watch('gender') !== 'other'))}>
+              <Button type="button" variant="ghost" onClick={handleNext} disabled={isLastQuestion || !!currentQuestion && (currentQuestion.type === 'likert' || currentQuestion.type === 'radio' || (currentQuestion.type === 'radio-other' && watch('gender') !== 'other'))}>
                  <ArrowDown className="h-5 w-5" />
               </Button>
           </div>
@@ -546,3 +541,5 @@ export function SurveyForm() {
     </main>
   );
 }
+
+    
