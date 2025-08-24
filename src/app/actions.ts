@@ -1,32 +1,37 @@
 
 'use server';
 
-import { GoogleSpreadsheet } from 'google-spreadsheet';
-import { JWT } from 'google-auth-library';
 import { summarizeSurveyResponses } from '@/ai/flows/summarize-survey-responses';
 import { questionOnlyQuestions, questions } from '@/lib/questions';
 import type { SurveySchema } from '@/lib/schema';
+import { surveySchema } from '@/lib/schema';
 
 async function appendToGoogleSheet(data: Record<string, any>) {
-  const serviceAccountAuth = new JWT({
-    email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
-
-  const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID!, serviceAccountAuth);
-
-  await doc.loadInfo(); 
-  const sheet = doc.sheetsByIndex[0]; 
-  
-  const headers = Object.keys(data);
-  const sheetHeaders = sheet.headerValues;
-
-  if (!sheetHeaders || sheetHeaders.length === 0) {
-      await sheet.setHeaderRow(headers);
+  const SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL;
+  if (!SCRIPT_URL) {
+    console.error("Google Script URL is not defined in environment variables.");
+    return; // Don't throw an error, just log it and move on.
   }
+  
+  try {
+    const response = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...data,
+        Timestamp: new Date().toISOString(),
+      }),
+    });
 
-  await sheet.addRow(data);
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error writing to Google Sheet:", errorText);
+    }
+  } catch (error) {
+    console.error("Fetch error when writing to Google Sheet:", error);
+  }
 }
 
 
@@ -46,7 +51,7 @@ export async function submitSurvey(data: SurveySchema) {
       .filter(Boolean)
       .join(', ');
 
-    const likertQuestions = questionOnlyQuestions.filter(q => q.type === 'likert');
+    const likertQuestions = questionOnlyQuestions.filter(q => q.type !== 'header');
     const responses = likertQuestions.map(q => {
       const answerValue = data[q.id as keyof SurveySchema];
       const questionText = q.text;
@@ -55,14 +60,28 @@ export async function submitSurvey(data: SurveySchema) {
 
     const summaryPromise = summarizeSurveyResponses({ demographics, responses });
     
-    const googleSheetsPromise = appendToGoogleSheet({
-      Timestamp: new Date().toISOString(),
-      ...demographicsData,
-      ...data,
-    }).catch(err => {
+    // Create a flat object of all form data for Google Sheets
+    const allData = surveySchema.parse(data);
+    const flatData = {
+        Name: allData.name || '',
+        Age: allData.age,
+        Gender: allData.gender === 'other' ? allData.genderOther : allData.gender,
+        'Educational Qualification': allData.education,
+        'Marital Status': allData.maritalStatus,
+        'Employability Status': allData.employmentStatus,
+    };
+
+    questionOnlyQuestions.forEach(q => {
+      if (q.type !== 'header') {
+        // Use question text as header, data key as value
+        const key = q.text;
+        const value = (allData as any)[q.id];
+        (flatData as any)[key] = value;
+      }
+    });
+
+    const googleSheetsPromise = appendToGoogleSheet(flatData).catch(err => {
         console.error("Error writing to Google Sheet:", err);
-        // We can decide if we want to fail the whole request or just log the error
-        // For now, we'll log it and let the survey submission succeed.
     });
 
 
@@ -74,10 +93,15 @@ export async function submitSurvey(data: SurveySchema) {
     };
   } catch (error) {
     console.error('Error submitting survey:', error);
+    if (error instanceof z.ZodError) {
+        return {
+          success: false,
+          error: 'Validation failed: ' + error.errors.map(e => e.message).join(', '),
+        };
+    }
     return {
       success: false,
       error: 'An unexpected error occurred. Please try again.',
     };
   }
 }
-
