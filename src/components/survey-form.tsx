@@ -91,9 +91,17 @@ export function SurveyForm() {
     }
 
     if (questionIndex < 0) return 0;
+    
+    // Check if it's the last question and the answer is filled.
+    const isLastQuestion = questionIndex === questionOnlyQuestions.length - 1;
+    const lastQuestionId = questionOnlyQuestions[questionOnlyQuestions.length - 1].id;
+    const lastQuestionValue = getValues(lastQuestionId as keyof SurveySchema);
+    if(isLastQuestion && lastQuestionValue) {
+      return 100;
+    }
 
     return ((questionIndex + 1) / questionOnlyQuestions.length) * 100;
-  }, [currentStep, isIntro, summary, isSubmitting, currentQuestion]);
+  }, [currentStep, isIntro, summary, isSubmitting, currentQuestion, getValues, watch()]);
 
 
   useEffect(() => {
@@ -163,6 +171,14 @@ export function SurveyForm() {
     const fieldName = question.id as keyof SurveySchema;
     const watchedValue = watch(fieldName);
 
+    const handleLikertOrRadioNext = async () => {
+      if (currentStep === questions.length - 1) {
+        await methods.handleSubmit(onSubmit)();
+      } else {
+        handleNext();
+      }
+    };
+    
     switch (question.type) {
       case 'text':
       case 'number':
@@ -191,7 +207,7 @@ export function SurveyForm() {
             onValueChange={(value) => {
               methods.setValue(fieldName, value, { shouldValidate: true });
               if (question.type === 'radio' || (question.type === 'radio-other' && value !== 'other')) {
-                setTimeout(() => handleNext(), 200);
+                setTimeout(() => handleLikertOrRadioNext(), 200);
               }
             }}
             value={watchedValue as string}
@@ -247,7 +263,7 @@ export function SurveyForm() {
                 )}
                 onClick={() => {
                   methods.setValue(fieldName, option.value, { shouldValidate: true });
-                  setTimeout(() => handleNext(), 200);
+                  setTimeout(() => handleLikertOrRadioNext(), 200);
                 }}
               >
                 {option.label}
@@ -258,7 +274,7 @@ export function SurveyForm() {
       default:
         return null;
     }
-  }, [watch, handleNext, methods]);
+  }, [watch, handleNext, methods, currentStep]);
 
   const renderIntro = useCallback(() => (
     <div id="step--1" className="h-full w-full flex flex-col justify-center items-center text-center p-4">
@@ -329,7 +345,7 @@ export function SurveyForm() {
     const isHeader = question.type === 'header';
     
     let titleContent;
-    if (isHeader && question.id === 'darkPatternsHeader') {
+    if (isHeader && (question.id === 'darkPatternsHeader' || question.id === 'regretHeader')) {
         const name = getValues('name') || 'you';
         const textParts = question.text.split('{name}');
         titleContent = (
@@ -360,7 +376,7 @@ export function SurveyForm() {
     return (
       <div key={question.id} id={`step-${index}`} className="h-full w-full flex flex-col items-center justify-center p-4">
         <div className="relative w-full max-w-md mx-auto">
-          <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto min-h-[250px] w-full flex flex-col justify-center">
+          <Card className="bg-card/50 border-primary/20 backdrop-blur-lg shadow-xl shadow-primary/10 rounded-2xl h-auto min-h-[350px] sm:min-h-[400px] w-full flex flex-col justify-center">
             <CardHeader className="text-center px-4 pt-6 sm:px-6">
               {qIsQuestion && (
                 <p className="text-primary font-bold mb-2 tracking-widest text-xs sm:text-sm">QUESTION {qIndex + 1}</p>
@@ -446,7 +462,7 @@ export function SurveyForm() {
         <div className="absolute bottom-[-30%] right-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[200px] opacity-30 animate-pulse animation-delay-4000"></div>
       </div>
       
-      <div className="relative w-full h-full flex items-center justify-center">
+      <div className="relative w-full h-full flex items-center justify-center pl-12">
         {!isIntro && !summary && !isSubmitting && (
           <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2">
               <div className="relative h-64 w-2 rounded-full overflow-hidden bg-primary/20">
@@ -461,7 +477,7 @@ export function SurveyForm() {
         )}
         
         <FormProvider {...methods}>
-          <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full w-full max-w-lg pl-16">
+          <form id={formId} onSubmit={methods.handleSubmit(onSubmit)} className="h-full w-full max-w-lg">
             <div ref={mainContainerRef} className="h-full w-full overflow-hidden">
                <AnimatePresence mode="wait">
                   <motion.div
@@ -501,3 +517,5 @@ export function SurveyForm() {
     </main>
   );
 }
+
+    
