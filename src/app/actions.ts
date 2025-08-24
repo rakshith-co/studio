@@ -17,19 +17,20 @@ async function appendToGoogleSheet(data: Record<string, any>) {
   try {
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
+      // The Google Apps Script is not a CORS-enabled endpoint.
+      // We must use 'no-cors' mode to avoid a CORS error in the browser.
+      // In 'no-cors' mode, we can't see the response, but the request will go through.
+      mode: 'no-cors', 
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        ...data,
-        Timestamp: new Date().toISOString(),
-      }),
+      body: JSON.stringify(data),
     });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error writing to Google Sheet:", errorText);
-    }
+    // In 'no-cors' mode, we can't access the response properties.
+    // We have to assume it was successful if no network error was thrown.
+    // console.log("Data sent to Google Sheet.");
+
   } catch (error) {
     console.error("Fetch error when writing to Google Sheet:", error);
   }
@@ -64,6 +65,7 @@ export async function submitSurvey(data: SurveySchema) {
     // Create a flat object of all form data for Google Sheets
     const allData = surveySchema.parse(data);
     const flatData: Record<string, any> = {
+        Timestamp: new Date().toISOString(),
         Name: allData.name || '',
         Age: allData.age,
         Gender: allData.gender === 'other' ? allData.genderOther : allData.gender,
@@ -74,19 +76,17 @@ export async function submitSurvey(data: SurveySchema) {
 
     questionOnlyQuestions.forEach(q => {
       if (q.type !== 'header') {
-        // Use question text as header, data key as value
-        const key = q.text;
+        const key = q.text; // Use question text as the key (column header)
         const value = (allData as any)[q.id];
         flatData[key] = value;
       }
     });
 
-    const googleSheetsPromise = appendToGoogleSheet(flatData).catch(err => {
-        console.error("Error writing to Google Sheet:", err);
-    });
+    // Don't wait for the Google Sheets promise to resolve.
+    // Fire and forget to avoid delaying the UI response.
+    appendToGoogleSheet(flatData);
 
-
-    const [summaryResult] = await Promise.all([summaryPromise, googleSheetsPromise]);
+    const summaryResult = await summaryPromise;
 
     return {
       success: true,
