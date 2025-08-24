@@ -65,7 +65,7 @@ export function SurveyForm() {
     mode: 'onChange',
   });
 
-  const { formState: { errors }, watch, trigger, getValues } = methods;
+  const { formState: { errors, isValid }, watch, trigger, getValues } = methods;
 
   const currentQuestion = useMemo(() => questions[currentStep], [currentStep]);
 
@@ -112,48 +112,6 @@ export function SurveyForm() {
     }
   }, [progress, summary]);
 
-  const handleNext = useCallback(async () => {
-    if (isIntro) {
-      setIsIntro(false);
-      setCurrentStep(0);
-      return;
-    }
-  
-    if (currentStep >= questions.length - 1) {
-      await methods.handleSubmit(onSubmit)();
-      return;
-    }
-
-    let isValid = true;
-    if (isQuestion && currentQuestion) {
-      isValid = await trigger(currentQuestion.id as keyof SurveySchema);
-    }
-
-    if (currentQuestion?.id === 'gender') {
-       const gender = getValues('gender');
-       if (gender === 'other') {
-         isValid = await trigger('genderOther');
-       }
-    }
-    
-    if (isValid) {
-      if (currentStep < questions.length - 1) {
-        setCurrentStep(prev => prev + 1);
-      } else {
-        await methods.handleSubmit(onSubmit)();
-      }
-    }
-  }, [isIntro, currentStep, isQuestion, currentQuestion, trigger, getValues, methods]);
-
-  const handlePrev = useCallback(() => {
-    if (isIntro) return;
-    if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
-    } else {
-      setIsIntro(true);
-    }
-  }, [isIntro, currentStep]);
-  
   const onSubmit = async (data: SurveySchema) => {
     setIsSubmitting(true);
     const result = await submitSurvey(data);
@@ -170,6 +128,52 @@ export function SurveyForm() {
     setIsSubmitting(false);
   };
   
+  const handleNext = useCallback(async () => {
+    if (isIntro) {
+      setIsIntro(false);
+      setCurrentStep(0);
+      return;
+    }
+
+    if (currentStep >= questions.length - 1) {
+      if (isValid) {
+        await methods.handleSubmit(onSubmit)();
+      } else {
+         // This will show validation errors if any field is invalid on submit attempt
+         const allFields = questionOnlyQuestions.map(q => q.id as keyof SurveySchema);
+         await trigger(allFields);
+      }
+      return;
+    }
+  
+    let fieldIsValid = true;
+    if (isQuestion && currentQuestion) {
+      fieldIsValid = await trigger(currentQuestion.id as keyof SurveySchema);
+    }
+
+    if (currentQuestion?.id === 'gender') {
+       const gender = getValues('gender');
+       if (gender === 'other') {
+         fieldIsValid = await trigger('genderOther');
+       }
+    }
+    
+    if (fieldIsValid) {
+      if (currentStep < questions.length - 1) {
+        setCurrentStep(prev => prev + 1);
+      }
+    }
+  }, [isIntro, currentStep, isQuestion, currentQuestion, trigger, getValues, methods, isValid]);
+
+  const handlePrev = useCallback(() => {
+    if (isIntro) return;
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    } else {
+      setIsIntro(true);
+    }
+  }, [isIntro, currentStep]);
+  
   const renderInput = useCallback((question: Question) => {
     const fieldName = question.id as keyof SurveySchema;
     const watchedValue = watch(fieldName);
@@ -178,13 +182,7 @@ export function SurveyForm() {
       // Use a timeout to allow the UI to update before moving to the next question
       // or submitting. This prevents a race condition where the submission is
       // triggered before the form state is updated with the last answer.
-      setTimeout(async () => {
-        if (currentStep >= questions.length - 1) {
-          await methods.handleSubmit(onSubmit)();
-        } else {
-          handleNext();
-        }
-      }, 50);
+      setTimeout(handleNext, 100);
     };
     
     switch (question.type) {
@@ -527,5 +525,3 @@ export function SurveyForm() {
     </main>
   );
 }
-
-    
