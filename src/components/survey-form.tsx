@@ -175,11 +175,16 @@ export function SurveyForm() {
     const watchedValue = watch(fieldName);
 
     const handleLikertOrRadioNext = async () => {
-      if (currentStep === questions.length - 1) {
-        await methods.handleSubmit(onSubmit)();
-      } else {
-        handleNext();
-      }
+      // Use a timeout to allow the UI to update before moving to the next question
+      // or submitting. This prevents a race condition where the submission is
+      // triggered before the form state is updated with the last answer.
+      setTimeout(async () => {
+        if (currentStep >= questions.length - 1) {
+          await methods.handleSubmit(onSubmit)();
+        } else {
+          handleNext();
+        }
+      }, 50);
     };
     
     switch (question.type) {
@@ -210,7 +215,7 @@ export function SurveyForm() {
             onValueChange={(value) => {
               methods.setValue(fieldName, value, { shouldValidate: true });
               if (question.type === 'radio' || (question.type === 'radio-other' && value !== 'other')) {
-                setTimeout(() => handleLikertOrRadioNext(), 200);
+                handleLikertOrRadioNext();
               }
             }}
             value={watchedValue as string}
@@ -266,7 +271,7 @@ export function SurveyForm() {
                 )}
                 onClick={() => {
                   methods.setValue(fieldName, option.value, { shouldValidate: true });
-                  setTimeout(() => handleLikertOrRadioNext(), 200);
+                  handleLikertOrRadioNext();
                 }}
               >
                 {option.label}
@@ -522,3 +527,5 @@ export function SurveyForm() {
     </main>
   );
 }
+
+    
