@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ArrowUp, ArrowDown, BarChart, CheckCircle, Clock, FileText, Loader, Sparkles, X } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowDown, BarChart, CheckCircle, Clock, FileText, Loader, Sparkles } from 'lucide-react';
 import React from 'react';
 
 import { questions, questionOnlyQuestions, likertOptions, type Question } from '@/lib/questions';
@@ -49,6 +49,19 @@ const ActiveScreen = React.memo(function ActiveScreen({
     return renderIntro();
 });
 ActiveScreen.displayName = 'ActiveScreen';
+
+function XIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 512 512"
+      fill="currentColor"
+      {...props}
+    >
+      <path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z" />
+    </svg>
+  );
+}
 
 export function SurveyForm() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -452,12 +465,13 @@ export function SurveyForm() {
                       className="bg-transparent border-2 border-sky-500 text-sky-400 hover:bg-sky-500 hover:text-white"
                       onClick={() => {
                         const shareText = `I just uncovered my online shopping habits with Q-Commerce Insights! Get your own analysis. #QCommerceInsights`;
-                        const imageUrl = `https://placehold.co/600x400.png?text=My+Q-Commerce+Insights`;
-                        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(imageUrl)}`;
-                        window.open(twitterUrl, '_blank');
+                        const shareUrl = new URL('https://twitter.com/intent/tweet');
+                        shareUrl.searchParams.set('text', shareText);
+                        shareUrl.searchParams.set('url', 'https://q-commerce-insights.web.app/'); // Replace with your actual app URL for the card to work
+                        window.open(shareUrl.toString(), '_blank');
                       }}
                     >
-                      <X className="mr-2 h-4 w-4 fill-current" />
+                      <XIcon className="mr-2 h-4 w-4 fill-current" />
                       Share on X
                     </Button>
                   </div>
