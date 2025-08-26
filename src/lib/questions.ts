@@ -132,9 +132,11 @@ export const questions: Question[] = [
     text: "Alright {name}! Let's see if you regret your post-purchase.",
   },
   ...[
-    "I regret the purchase I made (e.g., buying items I didn't need just because they were delivered so quickly).",
-    "I feel sorry about the decision I made (e.g., I didn’t compare prices or quality before ordering).",
-    "I believe I should have chosen a different option instead (e.g., opting for pickup to save money).",
+    'Whenever I make a choice on a quick commerce app, I’m curious about what would have happened if I had chosen differently.',
+    'Whenever I make a choice on a quick commerce app, I try to get information about how the other alternatives turned out.',
+    'If I make a choice on a quick commerce app and it turns out well, I still feel like something of a failure if I find out that another choice would have turned out better.',
+    'When I think about how I’m doing as a customer on quick commerce apps, I often assess opportunities I have passed up.',
+    'Once I make a decision on a quick commerce app, I don’t look back.',
   ].map((q, i) => ({
     id: `regret_${i + 1}`,
     type: 'likert' as const,

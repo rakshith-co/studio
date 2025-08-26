@@ -41,6 +41,8 @@ export const surveySchema = z.object({
   regret_1: z.string().min(1, 'This field is required.'),
   regret_2: z.string().min(1, 'This field is required.'),
   regret_3: z.string().min(1, 'This field is required.'),
+  regret_4: z.string().min(1, 'This field is required.'),
+  regret_5: z.string().min(1, 'This field is required.'),
 }).refine(data => data.gender !== 'other' || (data.gender === 'other' && data.genderOther && data.genderOther.length > 0), {
   message: "Please specify your gender",
   path: ["genderOther"],
